@@ -41,6 +41,11 @@ unwrap_used = "deny"
 wildcard_imports = "deny"
 # Transitive duplicates in the reqwest/incurs trees are not fixable from here.
 multiple_crate_versions = "allow"
+# Conflicts with `unreachable_pub`: an internal helper in a private module must
+# be `pub(crate)` to satisfy one lint and plain `pub` to satisfy the other.
+# `unreachable_pub` is the one worth keeping, because it catches a `pub` that
+# widens the API by accident, which this lint cannot.
+redundant_pub_crate = "allow"
 
 [workspace.dependencies]
 # Internal crates. Listed here so the dependency graph is visible in one place.
@@ -64,6 +69,7 @@ typesafe-sdk-runtime   = { path = "crates/typesafe-sdk-runtime",   version = "0.
 
 # Third party.
 anyhow = "1"
+async-trait = "0.1"
 http = "1"
 httpdate = "1"
 incurs = "0.7"
