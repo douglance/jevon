@@ -46,9 +46,10 @@ pub(crate) const LEAF_FORBIDDEN: &[&str] = &["reqwest", "tokio", "incurs", "hype
 
 /// Third-party crates only one named crate may depend on.
 ///
-/// One crate owns the HTTP client, and one owns the CLI framework. Anything
-/// else importing them means a layer has quietly grown a transport.
-pub(crate) const EXCLUSIVE: &[(&str, &str)] = &[("gpui-kit", "board-ui-kit")];
+/// One crate owns the HTTP client. Anything else naming it directly means a
+/// layer has grown its own transport, which is how retry and timeout behaviour
+/// quietly diverges between two code paths.
+pub(crate) const EXCLUSIVE: &[(&str, &str)] = &[("reqwest", "typesafe-sdk-http")];
 
 /// The layer `name` belongs to, if it is a workspace member.
 #[must_use]

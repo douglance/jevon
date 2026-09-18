@@ -12,8 +12,14 @@ categories.workspace = true
 description = "The `doctor` command."
 
 [dependencies]
+incurs.workspace = true
+schemars.workspace = true
+serde.workspace = true
+serde_json.workspace = true
 typesafe-sdk-cmd-kit.workspace = true
 typesafe-sdk-config.workspace = true
+typesafe-sdk-env.workspace = true
+typesafe-sdk-error.workspace = true
 
 [lints]
 workspace = true

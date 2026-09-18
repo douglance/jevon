@@ -13,7 +13,13 @@ description = "Shared plumbing for the command crates."
 
 [dependencies]
 typesafe-sdk-client.workspace = true
+typesafe-sdk-config.workspace = true
+typesafe-sdk-env.workspace = true
 typesafe-sdk-error.workspace = true
+typesafe-sdk-http.workspace = true
+
+[dev-dependencies]
+typesafe-sdk-headers.workspace = true
 
 [lints]
 workspace = true

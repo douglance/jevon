@@ -9,11 +9,16 @@ homepage.workspace = true
 readme.workspace = true
 keywords.workspace = true
 categories.workspace = true
-description = "The `models list` command."
+description = "The `models` command."
 
 [dependencies]
-typesafe-sdk-client.workspace = true
+incurs.workspace = true
+schemars.workspace = true
+serde.workspace = true
+serde_json.workspace = true
 typesafe-sdk-cmd-kit.workspace = true
+typesafe-sdk-client.workspace = true
+typesafe-sdk-error.workspace = true
 
 [lints]
 workspace = true
