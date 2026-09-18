@@ -33,6 +33,9 @@ pub struct Options {
     /// The question to ask about every item.
     #[incurs(alias = "n")]
     pub noul: Option<String>,
+    /// Read items from this JSON array file instead of stdin lines, or `-`
+    /// for that array on stdin. Use it when an item contains newlines.
+    pub items_file: Option<String>,
     /// How many items to have in flight at once.
     #[incurs(alias = "j", default = 8)]
     pub concurrency: u32,

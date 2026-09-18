@@ -3,7 +3,7 @@
 use futures::StreamExt as _;
 use typesafe_sdk_answers::Answer;
 use typesafe_sdk_client::{Client, SystemOneRequest};
-use typesafe_sdk_cmd_kit::{client, lines, questions as parse_questions};
+use typesafe_sdk_cmd_kit::{client, items as read_items, lines, questions as parse_questions};
 use typesafe_sdk_error::{Error, Result};
 use typesafe_sdk_questions::{Questions, choice_of, noul, questions, score};
 
@@ -20,7 +20,10 @@ const SHORTHAND: &str = "answer";
 /// items, and a client error when one cannot be built.
 pub(crate) async fn classify(options: &Options) -> Result<Classified> {
     let asked = question_set(options)?;
-    let items = lines()?;
+    let items = match options.items_file.as_deref() {
+        Some(path) => read_items(path)?,
+        None => lines()?,
+    };
     let client = client()?;
     let threshold = options.min_confidence;
 

@@ -86,6 +86,31 @@ fn read_file(path: &str) -> Result<String> {
         .map_err(|error| Error::Invalid(format!("could not read {path}: {error}")))
 }
 
+/// Items from a JSON array file, or `-` for that array on stdin.
+///
+/// Line mode cannot carry an item containing a newline, which every real item
+/// does — a source file, a document, a diff. This is the way in for those.
+///
+/// # Errors
+/// Returns [`Error::Invalid`] when the file cannot be read, is not an array of
+/// strings, or is empty.
+pub fn items(path: &str) -> Result<Vec<String>> {
+    let raw = read_file(path)?;
+    let parsed: Vec<String> = serde_json::from_str(&raw).map_err(|error| {
+        Error::Invalid(format!(
+            "`--items-file` must be a JSON array of strings: {error}."
+        ))
+    })?;
+    let kept: Vec<String> = parsed
+        .into_iter()
+        .filter(|i| !i.trim().is_empty())
+        .collect();
+    if kept.is_empty() {
+        return Err(Error::Invalid("`--items-file` held no items".to_owned()));
+    }
+    Ok(kept)
+}
+
 /// The lines of standard input, blank ones dropped.
 ///
 /// # Errors

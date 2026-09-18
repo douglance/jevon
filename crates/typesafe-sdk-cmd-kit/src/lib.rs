@@ -8,7 +8,7 @@
 mod input;
 mod mcp;
 
-pub use input::{STDIN, lines, questions, text};
+pub use input::{STDIN, items, lines, questions, text};
 pub use mcp::{read_only, read_only_remote};
 
 use std::sync::Arc;
