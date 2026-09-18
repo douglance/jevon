@@ -97,6 +97,10 @@ pub fn command() -> CommandDef {
 /// Rendered into the skill file as a single blockquote, so it stays one
 /// paragraph. What goes here is what someone gets wrong on their first
 /// integration, not what `--help` already says.
+///
+/// It ends by pointing at the live docs. Every command here is a call to a
+/// remote service, so an agent that can run this command can also read them,
+/// and they carry the current guidance this paragraph only summarises.
 const HINT: &str = "Pick the primitive by what the answer means: --choice for one of a \
 defined set, --score for a degree along an ordered dimension, --noul for whether a \
 condition holds. Put the judgment in the question and the possible answers in the \
@@ -106,7 +110,13 @@ text rather than summarising it. Ask every independent question in one --questio
 object: they run in parallel and cost one round trip. Read the numbers carefully: a noul \
 near 0.5 means the model finds yes and no equally likely, not a medium amount of the \
 thing; confidence on a choice or score reports how concentrated the distribution is, not \
-whether the answer is correct. Typed output guarantees the shape, never the truth.";
+whether the answer is correct. Typed output guarantees the shape, never the truth. The live docs are the source of \
+truth and worth reading before a first integration: start at \
+https://docs.typesafe.ai/llms.txt, then the page for the primitive you chose \
+(https://docs.typesafe.ai/primitives/choice.md, /noul.md or /score.md), \
+https://docs.typesafe.ai/concepts/state.md for what to put in the question, and \
+https://docs.typesafe.ai/confidence.md before you act on a threshold. Append .md to any \
+docs path to read it as Markdown.";
 
 /// Worked invocations, rendered into the skill file.
 fn examples() -> Vec<Example> {

@@ -129,8 +129,10 @@ async fn every_command_carries_worked_examples() {
 async fn every_command_explains_what_the_schema_cannot() {
     let expected = [
         (vec!["ask"], "a noul near 0.5"),
+        (vec!["ask"], "docs.typesafe.ai/llms.txt"),
         (vec!["models", "list"], "resolves to a concrete version"),
         (vec!["doctor"], "needs that variable in its own environment"),
+        (vec!["doctor"], "only command here that needs no"),
     ];
 
     for (command, point) in expected {

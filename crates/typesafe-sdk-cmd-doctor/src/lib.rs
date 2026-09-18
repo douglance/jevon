@@ -44,8 +44,8 @@ pub fn command() -> CommandDef {
     )
     .description("Report the resolved configuration and anything that would stop it working")
     .hint(
-        "Run this first when a call fails: it resolves the same settings a request would \
-         use and sends nothing. `problems` is empty when the client is usable. The key is \
+        "Run this first when a call fails. It is the only command here that needs no \
+         network: it resolves the same settings a request would use and sends nothing. `problems` is empty when the client is usable. The key is \
          reported masked and read from TYPESAFE_API_KEY — an agent launching this over MCP \
          needs that variable in its own environment, because the MCP registration \
          deliberately carries no credentials.",
