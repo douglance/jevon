@@ -65,6 +65,7 @@ typesafe-sdk-runtime   = { path = "crates/typesafe-sdk-runtime",   version = "0.
 # Third party.
 anyhow = "1"
 http = "1"
+httpdate = "1"
 incurs = "0.7"
 indexmap = { version = "2", features = ["serde"] }
 proc-macro2 = { version = "1", features = ["span-locations"] }
