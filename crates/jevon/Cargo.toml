@@ -24,6 +24,7 @@ path = "src/main.rs"
 incurs = { workspace = true, features = ["mcp", "yaml"] }
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
 typesafe-sdk-cmd-ask.workspace = true
+typesafe-sdk-cmd-classify.workspace = true
 typesafe-sdk-cmd-doctor.workspace = true
 typesafe-sdk-cmd-models.workspace = true
 

@@ -14,12 +14,15 @@ const SHORTHAND: &str = "answer";
 /// Returns [`Error::Invalid`] when no question was given, or when `--questions`
 /// is not a JSON object of questions.
 pub(crate) fn questions_from(options: &Options) -> Result<Questions> {
-    if let Some(raw) = options.questions.as_deref() {
-        return from_json(raw);
+    if let Some(set) = typesafe_sdk_cmd_kit::questions(
+        options.questions.as_deref(),
+        options.questions_file.as_deref(),
+    )? {
+        return Ok(set);
     }
     shorthand(options).ok_or_else(|| {
         Error::Invalid(
-            "No questions were given. Pass --questions with a JSON object, or one of \
+            "No questions were given. Pass --questions, --questions-file, or one of \
              --choice, --score or --noul."
                 .to_owned(),
         )
@@ -41,13 +44,4 @@ fn shorthand(options: &Options) -> Option<Questions> {
         .noul
         .as_deref()
         .map(|text| questions([(SHORTHAND, noul(text))]))
-}
-
-/// Parses a `--questions` payload.
-fn from_json(raw: &str) -> Result<Questions> {
-    serde_json::from_str(raw).map_err(|error| {
-        Error::Invalid(format!(
-            "`--questions` must be a JSON object of questions keyed by answer name: {error}."
-        ))
-    })
 }

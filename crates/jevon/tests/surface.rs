@@ -41,7 +41,7 @@ async fn every_command_is_exposed_as_a_tool() {
         .map(|tool| tool.name.clone())
         .collect();
     names.sort();
-    assert_eq!(names, vec!["ask", "doctor", "models_list"]);
+    assert_eq!(names, vec!["ask", "classify", "doctor", "models_list"]);
 }
 
 #[tokio::test]
@@ -65,7 +65,7 @@ async fn every_tool_declares_a_description_and_an_output_schema() {
 async fn the_help_lists_every_command() {
     let (exit, out) = observe(&["--help"]).await;
     assert_eq!(exit, None);
-    for command in ["ask", "doctor", "models"] {
+    for command in ["ask", "classify", "doctor", "models"] {
         assert!(
             out.contains(command),
             "`{command}` missing from help:\n{out}"

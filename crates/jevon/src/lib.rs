@@ -18,6 +18,7 @@ pub fn build_cli() -> Cli {
         .version(env!("CARGO_PKG_VERSION"))
         .description("Ask TypeSafe questions about text and get typed answers")
         .command("ask", typesafe_sdk_cmd_ask::command())
+        .command("classify", typesafe_sdk_cmd_classify::command())
         .command("doctor", typesafe_sdk_cmd_doctor::command())
         .group(models_group())
 }

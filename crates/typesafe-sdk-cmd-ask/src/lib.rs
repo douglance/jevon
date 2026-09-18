@@ -16,7 +16,7 @@ use typesafe_sdk_cmd_kit::{client, code_for, read_only_remote};
 /// What to ask about.
 #[derive(Deserialize, incurs::Args)]
 pub struct Args {
-    /// The text to ask about.
+    /// The text to ask about, or `-` to read it from standard input.
     pub state: String,
 }
 
@@ -32,6 +32,8 @@ pub struct Options {
     /// sent together are answered in parallel and cannot see each other.
     #[incurs(alias = "q")]
     pub questions: Option<String>,
+    /// Read the question set from this file instead, or `-` for stdin.
+    pub questions_file: Option<String>,
     /// Choose one of these labels. Probabilities compare the options, so
     /// include a no-match label when none may apply.
     #[incurs(alias = "c")]
@@ -165,7 +167,8 @@ fn combined() -> Example {
 
 async fn run(args: &Args, options: &Options) -> Result<Answered, typesafe_sdk_error::Error> {
     let questions = parse::questions_from(options)?;
-    let mut request = SystemOneRequest::new(args.state.as_str(), questions);
+    let state = typesafe_sdk_cmd_kit::text(&args.state)?;
+    let mut request = SystemOneRequest::new(state.as_str(), questions);
     if let Some(model) = options.model.clone() {
         request = request.model(model);
     }

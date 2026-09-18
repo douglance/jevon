@@ -101,7 +101,7 @@ async fn every_command_carries_worked_examples() {
     let (_, out) = observe(&["--llms-full", "--format", "json"]).await;
     let manifest: serde_json::Value = serde_json::from_str(&out).unwrap();
 
-    for command in ["ask", "doctor", "models list"] {
+    for command in ["ask", "classify", "doctor", "models list"] {
         let found = manifest["commands"]
             .as_array()
             .unwrap()
@@ -130,6 +130,7 @@ async fn every_command_explains_what_the_schema_cannot() {
     let expected = [
         (vec!["ask"], "a noul near 0.5"),
         (vec!["ask"], "docs.typesafe.ai/llms.txt"),
+        (vec!["classify"], "one client, one connection"),
         (vec!["models", "list"], "resolves to a concrete version"),
         (vec!["doctor"], "needs that variable in its own environment"),
         (vec!["doctor"], "only command here that needs no"),

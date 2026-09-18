@@ -5,8 +5,10 @@
 //! the CLI reports. Error codes are stable strings because agents branch on
 //! them, so they are derived from the error's kind rather than its message.
 
+mod input;
 mod mcp;
 
+pub use input::{STDIN, lines, questions, text};
 pub use mcp::{read_only, read_only_remote};
 
 use std::sync::Arc;

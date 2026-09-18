@@ -1,5 +1,5 @@
 [package]
-name = "typesafe-sdk-cmd-kit"
+name = "typesafe-sdk-cmd-classify"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -9,20 +9,22 @@ homepage.workspace = true
 readme.workspace = true
 keywords.workspace = true
 categories.workspace = true
-description = "Shared plumbing for the command crates."
+description = "The `classify` command."
 
 [dependencies]
+futures.workspace = true
 incurs.workspace = true
+schemars.workspace = true
+serde.workspace = true
 serde_json.workspace = true
-typesafe-sdk-questions.workspace = true
+typesafe-sdk-answers.workspace = true
 typesafe-sdk-client.workspace = true
-typesafe-sdk-config.workspace = true
-typesafe-sdk-env.workspace = true
+typesafe-sdk-cmd-kit.workspace = true
 typesafe-sdk-error.workspace = true
-typesafe-sdk-http.workspace = true
+typesafe-sdk-questions.workspace = true
 
 [dev-dependencies]
-typesafe-sdk-headers.workspace = true
+indexmap.workspace = true
 
 [lints]
 workspace = true
