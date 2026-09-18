@@ -33,7 +33,7 @@ pub(crate) const LAYERS: &[(&str, u8)] = &[
     ("typesafe-sdk-cmd-ask", 5),
     ("typesafe-sdk-cmd-doctor", 5),
     // 6 — binaries and cross-crate tests.
-    ("typesafe-sdk-cli", 6),
+    ("jevon", 6),
     ("typesafe-sdk-tests", 6),
     ("xtask", 6),
 ];
