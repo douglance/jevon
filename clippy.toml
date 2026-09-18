@@ -1,0 +1,11 @@
+# Thresholds paired with the [workspace.lints] block in Cargo.toml.
+# Raising one is a decision to record, not a convenience.
+msrv = "1.98.1"
+cognitive-complexity-threshold = 7
+excessive-nesting-threshold = 3
+too-many-arguments-threshold = 4
+too-many-lines-threshold = 30
+type-complexity-threshold = 120
+warn-on-all-wildcard-imports = true
+# Product and protocol names that are not code and do not want backticks.
+doc-valid-idents = ["TypeSafe", "TypeScript", "JavaScript", "SystemOne", "MCP", "JSON", "SDK", "HTTP", "URL", "CLI", ".."]

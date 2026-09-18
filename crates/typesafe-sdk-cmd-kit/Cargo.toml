@@ -1,0 +1,19 @@
+[package]
+name = "typesafe-sdk-cmd-kit"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "Shared plumbing for the command crates."
+
+[dependencies]
+typesafe-sdk-client.workspace = true
+typesafe-sdk-error.workspace = true
+
+[lints]
+workspace = true

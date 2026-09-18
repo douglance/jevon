@@ -1,0 +1,19 @@
+[package]
+name = "typesafe-sdk-cmd-doctor"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "The `doctor` command."
+
+[dependencies]
+typesafe-sdk-cmd-kit.workspace = true
+typesafe-sdk-config.workspace = true
+
+[lints]
+workspace = true
