@@ -64,7 +64,10 @@ fn allowed_lint(line: &str) -> Option<String> {
     let at = trimmed.find("allow(")?;
     let rest = &trimmed[at + "allow(".len()..];
     let close = rest.find(')')?;
-    let name = rest[..close].trim().rsplit("::").next()?.trim();
+    // `allow(clippy::panic, reason = "…")` names one lint and then explains
+    // itself; only the lint before the first comma is the thing being silenced.
+    let first = rest[..close].split(',').next()?.trim();
+    let name = first.rsplit("::").next()?.trim();
     (!name.is_empty()).then(|| name.to_owned())
 }
 
@@ -105,6 +108,18 @@ mod tests {
             "#[allow(clippy::panic)]",
         );
         assert!(found.is_empty());
+    }
+
+    /// A reason is encouraged, and must not be mistaken for the lint name.
+    #[test]
+    fn a_reason_does_not_hide_the_lint_being_silenced() {
+        let source =
+            "#[cfg(test)]\n#[allow(clippy::panic, reason = \"tests fail loudly\")]\nmod t {}";
+        assert!(check(Path::new("src/lib.rs"), source).is_empty());
+
+        let banned =
+            "#[cfg(test)]\n#[allow(clippy::wildcard_imports, reason = \"convenient\")]\nmod t {}";
+        assert_eq!(check(Path::new("src/lib.rs"), banned).len(), 1);
     }
 
     #[test]
