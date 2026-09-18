@@ -1,4 +1,10 @@
 //! The `doctor` command.
+//!
+//! Almost every failure in this CLI is a configuration failure: no key, a key
+//! the agent's environment never received, a base URL pointing somewhere else.
+//! This resolves exactly what a request would resolve and sends nothing, so
+//! "is it me or is it them" can be answered without spending a round trip or
+//! reading a stack trace.
 
 use incurs::command::{CommandDef, Example, TypedContext, TypedResult};
 use schemars::JsonSchema;

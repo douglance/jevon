@@ -1,4 +1,8 @@
 //! The `models` command.
+//!
+//! Worth running before pinning a model: the names accepted by `--model` are
+//! whatever this lists, and `jev-latest` is an alias that silently becomes a
+//! concrete version in the answer.
 
 use incurs::command::{CommandDef, Example, TypedContext, TypedResult};
 use schemars::JsonSchema;

@@ -1,4 +1,9 @@
 //! What a classification run reports.
+//!
+//! A failed item is a row, not an aborted run: one unclassifiable line in a
+//! thousand should not cost the other nine hundred and ninety-nine. The
+//! `uncertain` count is the one worth reading first, because a confident wrong
+//! answer and an unconfident right one look identical in the labels alone.
 
 use schemars::JsonSchema;
 use serde::Serialize;
