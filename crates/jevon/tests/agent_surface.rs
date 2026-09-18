@@ -91,3 +91,55 @@ async fn the_token_budgeting_flags_are_reachable() {
         assert_eq!(exit, None, "{argv:?} was rejected");
     }
 }
+
+/// A schema tells an agent what it *may* send. It cannot say which primitive
+/// suits a question, or that a noul near 0.5 means ambiguity rather than a
+/// middling amount. Examples and hints carry that, and both reach the skill
+/// files an agent actually reads.
+#[tokio::test]
+async fn every_command_carries_worked_examples() {
+    let (_, out) = observe(&["--llms-full", "--format", "json"]).await;
+    let manifest: serde_json::Value = serde_json::from_str(&out).unwrap();
+
+    for command in ["ask", "doctor", "models list"] {
+        let found = manifest["commands"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|c| c["name"] == command)
+            .unwrap_or_else(|| panic!("{command} missing from the manifest"));
+        let examples = found["examples"].as_array().map_or(&[][..], Vec::as_slice);
+        assert!(!examples.is_empty(), "{command} has no examples");
+        let described = examples
+            .iter()
+            .filter(|e| e["description"].as_str().is_some_and(|d| !d.is_empty()))
+            .count();
+        assert_eq!(
+            described,
+            examples.len(),
+            "{command} has an example that does not say what it demonstrates"
+        );
+    }
+}
+
+/// Hints do not reach `--llms-full`, only `--help` and the skill file, so this
+/// asserts them where they appear. Each command is paired with the point its
+/// hint exists to make; deleting the guidance breaks the test.
+#[tokio::test]
+async fn every_command_explains_what_the_schema_cannot() {
+    let expected = [
+        (vec!["ask"], "a noul near 0.5"),
+        (vec!["models", "list"], "resolves to a concrete version"),
+        (vec!["doctor"], "needs that variable in its own environment"),
+    ];
+
+    for (command, point) in expected {
+        let mut argv = command.clone();
+        argv.push("--help");
+        let (_, out) = observe(&argv).await;
+        assert!(
+            out.contains(point),
+            "{command:?} no longer explains {point:?}:\n{out}"
+        );
+    }
+}

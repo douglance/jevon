@@ -7,7 +7,7 @@
 
 mod parse;
 
-use incurs::command::{CommandDef, TypedContext, TypedResult};
+use incurs::command::{CommandDef, Example, TypedContext, TypedResult};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use typesafe_sdk_client::SystemOneRequest;
@@ -28,16 +28,20 @@ pub struct Args {
 #[derive(Default, Deserialize, incurs::Options)]
 #[serde(default)]
 pub struct Options {
-    /// Questions as a JSON object, keyed by answer name.
+    /// Questions as a JSON object keyed by answer name. Independent questions
+    /// sent together are answered in parallel and cannot see each other.
     #[incurs(alias = "q")]
     pub questions: Option<String>,
-    /// Shorthand for one choice question over these labels.
+    /// Choose one of these labels. Probabilities compare the options, so
+    /// include a no-match label when none may apply.
     #[incurs(alias = "c")]
     pub choice: Vec<String>,
-    /// Shorthand for one score question over this ordered rubric.
+    /// Rate against these ordered levels, lowest first. Each level must
+    /// describe a concrete situation and stand on its own.
     #[incurs(alias = "s")]
     pub score: Vec<String>,
-    /// Shorthand for one yes/no question.
+    /// The question to judge. Answered as a probability of yes when used
+    /// alone, with no separate confidence.
     #[incurs(alias = "n")]
     pub noul: Option<String>,
     /// The model to use; defaults to the configured one.
@@ -77,9 +81,76 @@ pub fn command() -> CommandDef {
             }
         },
     )
-    .description("Ask questions about a piece of text and get typed answers")
+    .description(
+        "Ask questions about text and get typed answers with probabilities. \
+         Use when code needs a judgment — routing, classification, ranking, \
+         extraction or verification — rather than generated prose",
+    )
+    .hint(HINT)
+    .examples(examples())
     .mcp(read_only_remote("Ask questions about text"))
     .done()
+}
+
+/// Guidance an agent needs that the schema cannot carry.
+///
+/// Rendered into the skill file as a single blockquote, so it stays one
+/// paragraph. What goes here is what someone gets wrong on their first
+/// integration, not what `--help` already says.
+const HINT: &str = "Pick the primitive by what the answer means: --choice for one of a \
+defined set, --score for a degree along an ordered dimension, --noul for whether a \
+condition holds. Put the judgment in the question and the possible answers in the \
+labels; answer names are for your code and are never shown to the model, so each \
+question must carry its full meaning. Give it enough state to answer — quote the source \
+text rather than summarising it. Ask every independent question in one --questions \
+object: they run in parallel and cost one round trip. Read the numbers carefully: a noul \
+near 0.5 means the model finds yes and no equally likely, not a medium amount of the \
+thing; confidence on a choice or score reports how concentrated the distribution is, not \
+whether the answer is correct. Typed output guarantees the shape, never the truth.";
+
+/// Worked invocations, rendered into the skill file.
+fn examples() -> Vec<Example> {
+    vec![route(), rate(), judge(), combined()]
+}
+
+fn example(command: &str, description: &str) -> Example {
+    Example {
+        command: command.to_owned(),
+        description: Some(description.to_owned()),
+    }
+}
+
+fn route() -> Example {
+    example(
+        "\"I was charged twice\" --noul \"What is this about?\" \
+         --choice billing --choice technical --choice other",
+        "Route a ticket by choosing one label",
+    )
+}
+
+fn rate() -> Example {
+    example(
+        "\"The build has been broken for three days\" --noul \"How urgent is this?\" \
+         --score \"can wait\" --score \"this week\" --score today",
+        "Rate against an ordered rubric",
+    )
+}
+
+fn judge() -> Example {
+    example(
+        "\"$(cat review.txt)\" --noul \"Does this mention a security problem?\"",
+        "Judge whether one condition holds",
+    )
+}
+
+fn combined() -> Example {
+    example(
+        "\"$TICKET\" --questions '{\"category\":{\"type\":\"choice\",\
+         \"instructions\":\"What is this about?\",\
+         \"criteria\":{\"billing\":null,\"technical\":null,\"other\":null}},\
+         \"urgent\":{\"type\":\"noul\",\"instructions\":\"Is it urgent?\"}}'",
+        "Ask several independent questions in one request; they run in parallel",
+    )
 }
 
 async fn run(args: &Args, options: &Options) -> Result<Answered, typesafe_sdk_error::Error> {
