@@ -14,6 +14,7 @@ pub(crate) const LAYERS: &[(&str, u8)] = &[
     ("typesafe-sdk-env", 0),
     ("typesafe-sdk-runtime", 0),
     ("typesafe-sdk-headers", 0),
+    ("typesafe-sdk-text", 0),
     // 1 — domain. The wire vocabulary and the reliability policy.
     ("typesafe-sdk-questions", 1),
     ("typesafe-sdk-answers", 1),
@@ -28,11 +29,14 @@ pub(crate) const LAYERS: &[(&str, u8)] = &[
     // 4 — the SDK facade consumers depend on.
     ("typesafe-sdk-client", 4),
     // 5 — command surface, one crate per command.
+    ("typesafe-sdk-lint", 5),
+    ("typesafe-sdk-lsp", 5),
     ("typesafe-sdk-cmd-kit", 5),
     ("typesafe-sdk-cmd-models", 5),
     ("typesafe-sdk-cmd-ask", 5),
     ("typesafe-sdk-cmd-classify", 5),
     ("typesafe-sdk-cmd-doctor", 5),
+    ("typesafe-sdk-cmd-lint", 5),
     // 6 — binaries and cross-crate tests.
     ("jevon", 6),
     ("typesafe-sdk-tests", 6),

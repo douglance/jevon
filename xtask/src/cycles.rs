@@ -81,10 +81,26 @@ mod tests {
         assert!(cycles(Path::new("/tmp"), &graph).is_empty());
     }
 
+    /// Asserting only that something was reported would pass for a check that
+    /// always complains, so this pins the message to a crate in the cycle. The
+    /// names are deliberately distinctive: single letters would be matched by
+    /// almost any English sentence, including a hardcoded one.
     #[test]
-    fn a_cycle_is_reported() {
-        let graph = graph_of(&[("a", &["b"]), ("b", &["c"]), ("c", &["a"])]);
-        assert!(!cycles(Path::new("/tmp"), &graph).is_empty());
+    fn a_cycle_is_reported_and_names_a_crate_in_it() {
+        let graph = graph_of(&[
+            ("zeta-store", &["kappa-render"]),
+            ("kappa-render", &["omega-parse"]),
+            ("omega-parse", &["zeta-store"]),
+        ]);
+        let found = cycles(Path::new("/tmp"), &graph);
+        assert_eq!(found.len(), 1);
+        let message = &found[0].message;
+        assert!(
+            ["zeta-store", "kappa-render", "omega-parse"]
+                .iter()
+                .any(|node| message.contains(node)),
+            "the cycle report names no crate in it: {message}"
+        );
     }
 
     #[test]
