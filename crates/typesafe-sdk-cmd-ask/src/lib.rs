@@ -11,7 +11,7 @@ use incurs::command::{CommandDef, TypedContext, TypedResult};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use typesafe_sdk_client::SystemOneRequest;
-use typesafe_sdk_cmd_kit::{client, code_for};
+use typesafe_sdk_cmd_kit::{client, code_for, read_only_remote};
 
 /// What to ask about.
 #[derive(Deserialize, incurs::Args)]
@@ -78,6 +78,7 @@ pub fn command() -> CommandDef {
         },
     )
     .description("Ask questions about a piece of text and get typed answers")
+    .mcp(read_only_remote("Ask questions about text"))
     .done()
 }
 

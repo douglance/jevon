@@ -3,7 +3,7 @@
 use incurs::command::{CommandDef, TypedContext, TypedResult};
 use schemars::JsonSchema;
 use serde::Serialize;
-use typesafe_sdk_cmd_kit::{client, code_for};
+use typesafe_sdk_cmd_kit::{client, code_for, read_only_remote};
 
 /// One model, as the CLI reports it.
 #[derive(Serialize, JsonSchema)]
@@ -45,5 +45,6 @@ pub fn list() -> CommandDef {
         }
     })
     .description("List the models available to this account")
+    .mcp(read_only_remote("List models"))
     .done()
 }

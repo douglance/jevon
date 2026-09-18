@@ -3,6 +3,7 @@
 use incurs::command::{CommandDef, TypedContext, TypedResult};
 use schemars::JsonSchema;
 use serde::Serialize;
+use typesafe_sdk_cmd_kit::read_only;
 use typesafe_sdk_config::Builder;
 use typesafe_sdk_env::{Process, Var, read};
 
@@ -42,6 +43,7 @@ pub fn command() -> CommandDef {
         |_ctx: TypedContext<(), (), ()>| async { TypedResult::ok(diagnose()) },
     )
     .description("Report the resolved configuration and anything that would stop it working")
+    .mcp(read_only("Diagnose configuration"))
     .done()
 }
 

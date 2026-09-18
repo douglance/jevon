@@ -12,6 +12,7 @@ categories.workspace = true
 description = "Shared plumbing for the command crates."
 
 [dependencies]
+incurs.workspace = true
 typesafe-sdk-client.workspace = true
 typesafe-sdk-config.workspace = true
 typesafe-sdk-env.workspace = true
