@@ -18,6 +18,23 @@ Looking for the Rust library rather than the binary? That is
 [typesafe-sdk-rs](https://github.com/douglance/typesafe-sdk-rs). This repository
 depends on it from crates.io like any other consumer.
 
+## Does this fit your problem?
+
+It fits when your program already has a decision to make, the options are known
+in advance, and judgment is the hard part. It does not generate anything.
+
+The test is mechanical: **if you can write the `match` arms before the call, it
+fits. If you can't, it doesn't.**
+
+It is the wrong tool when you need prose or code out, when the options are not
+known ahead of time, when you need the reasoning rather than a probability, or
+when one call at low volume already has an LLM in the loop.
+
+[**When jev fits**](docs/when-to-use.md) covers the seven situations it is
+actually used for, what each costs, and the failure modes worth knowing before
+you build on it — including why overlapping labels should be ranked rather than
+forced into one bucket.
+
 ## Commands
 
 | Command | What it does |
