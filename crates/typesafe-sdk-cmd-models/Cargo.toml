@@ -9,7 +9,7 @@ homepage.workspace = true
 readme.workspace = true
 keywords.workspace = true
 categories.workspace = true
-description = "The `models` command."
+description = "The `models` command for jev, the TypeSafe command-line interface."
 
 [dependencies]
 incurs.workspace = true

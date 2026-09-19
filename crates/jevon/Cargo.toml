@@ -9,7 +9,7 @@ homepage.workspace = true
 readme.workspace = true
 keywords.workspace = true
 categories.workspace = true
-description = "Command-line interface and MCP server for the TypeSafe API."
+description = "jev — the command-line interface and MCP server for the TypeSafe API. Ask questions about text and get typed answers with probabilities."
 
 [[bin]]
 name = "jev"

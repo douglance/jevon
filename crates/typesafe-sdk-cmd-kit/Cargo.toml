@@ -9,7 +9,7 @@ homepage.workspace = true
 readme.workspace = true
 keywords.workspace = true
 categories.workspace = true
-description = "Shared plumbing for the command crates."
+description = "Shared plumbing for the `jev` command crates: configuration, client construction and output shaping."
 
 [dependencies]
 incurs.workspace = true

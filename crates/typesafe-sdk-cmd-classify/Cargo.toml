@@ -9,7 +9,7 @@ homepage.workspace = true
 readme.workspace = true
 keywords.workspace = true
 categories.workspace = true
-description = "The `classify` command."
+description = "The `classify` command for jev, the TypeSafe command-line interface."
 
 [dependencies]
 futures.workspace = true
