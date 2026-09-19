@@ -86,8 +86,8 @@ pub fn command() -> CommandDef {
     )
     .description(
         "Ask questions about text and get typed answers with probabilities. \
-         Use when code needs a judgment — routing, classification, ranking, \
-         extraction or verification — rather than generated prose",
+         Use when code needs a judgment — choosing the next action, filtering or \
+         ranking, routing, or gating — rather than generated prose",
     )
     .hint(HINT)
     .examples(examples())

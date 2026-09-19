@@ -24,86 +24,125 @@ been met and the fit is not there.
 
 ## Where these numbers come from
 
-The shares below were produced by classifying public projects that use the API
-and then hand-checking the result. Read them as shape, not as measurement:
+491 unique public projects, merged from two independent sources: a gallery of
+posts about the API, and a curated list of repositories checked against their
+own source. **280 of them actually call Jev to decide something** — the rest
+reimplement the model, benchmark it, wrap it as an SDK, or list it. The shares
+below are over the 210 whose shape was confidently labelled.
 
-- Among confident labels (probability ≥ 0.8), 6 of 7 spot-checked were correct.
-- The incorrect ones confused **routing** with **picking an action in a loop**,
-  which are adjacent and easy to conflate. Treat the boundary between those two
-  as soft.
-- Low-confidence rows were genuinely uninformative source material, not model
-  failure. This matters: a thin input is the usual reason an answer is
-  unconfident, here and in your own use.
+Read them as shape, not as measurement:
 
-**The shape is sound. The percentages are approximate.** They are here to show
-relative weight, not to be quoted.
+- The two sources disagree sharply on weight. Posts reward what you can watch,
+  so control loops are 76 of them against 14 repositories; repositories reward
+  what you can install, so routing and gating are far better represented there.
+  Neither population alone gives the right prior.
+- **Routing and picking an action in a loop are adjacent and easy to conflate.**
+  Treat that boundary as soft; it is where the hand-checked errors were.
+- Low-confidence rows were uninformative source material, not model failure. A
+  thin input is the usual reason an answer is unconfident, here and in your own
+  use.
 
-## The seven situations
+**The shape is sound. The percentages are approximate.** They show relative
+weight and are not for quoting.
+
+## The six situations
 
 | # | Situation | Share |
 |---|---|---|
-| 1 | Pick the next action in a loop | ~45% |
-| 2 | Filter or rank a stream | ~17% |
-| 3 | Gate — pass or fail against rules | ~16% |
-| 4 | Label or score a large batch | ~10% |
-| 5 | Route between tools, models, agents or branches | ~9% |
-| 6 | Extract structured fields from messy text | ~3% |
-| 7 | Score against a rubric | — |
+| 1 | Pick the next action in a loop | ~43% |
+| 2 | Filter or rank a stream | ~20% |
+| 3 | Route between tools, models, agents or branches | ~15% |
+| 4 | Gate — pass or fail against rules | ~11% |
+| 5 | Label or score a large batch | ~6% |
+| 6 | Assemble an artefact from a sequence of choices | ~4% |
 
-### 1. Pick the next action in a loop (~45%)
+Extracting structured fields is a seventh thing people try, and across all 491
+projects **not one instance was confidently labelled**. It works — it is how
+field mapping and query parsing are done — but nobody has built much with it.
+Treat it as unexplored rather than proven.
+
+### 1. Pick the next action in a loop (~43%)
 
 Game moves, robot steps, browser actions, trading decisions, test steps. You
 hand it the state and the legal actions; it picks one.
 
-The schema is doing the important work here: it makes an illegal move
-*impossible* rather than unlikely. Tetris, MuJoCo arms, Stagehand browser
-control and RuneScape bots all have this shape. Budget around 200–400ms per
-step.
+The schema is doing the important work: it makes an illegal move *impossible*
+rather than unlikely. Tetris, MuJoCo arms, Stagehand browser control, a drone
+at 2.5Hz and one trade per block all have this shape. Budget around 200–400ms
+per step.
 
-### 2. Filter or rank a stream (~17%)
+The ones that work read **structured state**, not pixels.
 
-Feed filtering, ad blocking, inbox triage, engagement-bait detection, pruning
-an agent's context. Everything arrives, most of it should be dropped, and the
-question is the same every time.
+### 2. Filter or rank a stream (~20%)
 
-### 3. Gate — pass or fail against rules (~16%)
+Feed filtering, ad blocking, inbox triage, engagement-bait detection, résumé
+and job matching, support-ticket triage. Everything arrives, most of it should
+be dropped, and the question is the same every time.
 
-A verdict before something proceeds: PR checks, draft quality gates, content
-moderation, commit review, reward-hacking guards, "is a safeguard needed here".
+The standout instance is **pruning an agent's own context** — scoring every
+past tool call and result in one request and dropping the stale ones. Several
+people built that independently, in both sources, and it has more adoption than
+anything else here.
 
-The output is a boolean *and* a probability, so you set the threshold yourself
-and route the uncertain cases to a human instead of acting on a coin flip.
-
-### 4. Label or score a large batch (~10%)
-
-Emails, résumés, ads, articles, support tickets, replay events. This is where
-cost per item dominates rather than latency per call — 2,225 articles in 4.9
-seconds, 63,045 emails in under three minutes.
-
-### 5. Route between tools, models, agents or branches (~9%)
+### 3. Route between tools, models, agents or branches (~15%)
 
 Which skill, which model, which component, which handler. Cheap enough to put
 in front of an expensive call: several projects use it to decide whether a full
 LLM is needed at all.
 
-### 6. Extract structured fields from messy text (~3%)
+This is the shape that gets **embedded in other people's tools** rather than
+shipped standalone — model routers for coding agents, skill selection, semantic
+HTTP routing. If you want the work to be adopted rather than admired, it is the
+most promising of the six.
 
-Mapping fields between schemas, parsing a query into filters, walking an
-ontology. Done as a set of choice questions rather than as free-form
-extraction, which is what keeps the output shape guaranteed.
+### 4. Gate — pass or fail against rules (~11%)
 
-### 7. Score against a rubric
+A verdict before something proceeds: PR checks, draft quality gates, content
+moderation, tool-permission checks, reward-hacking guards.
 
-Any time you want a position on a scale rather than a bucket. The score comes
-back continuous — 1.03, 1.95 — so you can sort by it.
+The output is a boolean *and* a probability, so you set the threshold yourself
+and route the uncertain cases to a human instead of acting on a coin flip.
 
-Rounding it to a level throws away the only property that makes ranking work.
-If you find yourself writing `round(score)`, you wanted a choice question.
+Worth knowing before you build one: gates are **built often and adopted
+rarely**. Everyone wants their own rules, so a gate is usually worth writing
+for yourself and rarely worth publishing.
+
+### 5. Label or score a large batch (~6%)
+
+Emails, résumés, ads, articles, support tickets, replay events. This is where
+cost per item dominates rather than latency per call — 2,225 articles in 4.9
+seconds, 63,045 emails in under three minutes.
+
+### 6. Assemble an artefact from a sequence of choices (~4%)
+
+Music from spoken instructions, platformer levels, a page composed per reader,
+3D character expressions, an image predicted a region at a time.
+
+This one looks like it contradicts "it does not generate anything", and it does
+not: the model still only ever picks from options you defined. Your code does
+the assembling. It is listed separately because people reach for it without
+recognising it as a decision problem.
+
+## Picking the primitive
+
+Orthogonal to all six. Once you know the shape, the primitive follows from what
+the answer *means*:
+
+- **noul** — whether a condition holds. The probability is the answer; there is
+  no separate confidence.
+- **choice** — one of a set you defined. You get the pick and the full
+  distribution.
+- **score** — a position along an ordered rubric. The value comes back
+  continuous — 1.03, 1.95 — so you can sort by it.
+
+Rounding a score to a level throws away the only property that makes ranking
+work. If you find yourself writing `round(score)`, you wanted a choice.
 
 ## When it is the wrong tool
 
-**You need text, code or prose out.** It does not generate. Nothing across the
-projects surveyed uses it to produce anything.
+**You need text, code or prose out.** It does not generate, and across 491
+projects nothing uses it to. Situation 6 is not an exception: there the model
+picks from options you defined and your code assembles the result.
 
 **The options are not known ahead of time.** Open-ended output is the other
 kind of model's job.
@@ -160,10 +199,30 @@ in a shell — one client, one connection, several items in flight at once:
 
 ```sh
 # One process, one connection, N decisions.
-jev classify --noul "Is this a bug report?" --concurrency 8 < titles.txt
+jev classify --stdin --noul "Is this a bug report?" --concurrency 8 < titles.txt
 
 # Not this: one process and one TLS handshake per line.
 while read -r line; do jev ask "$line" --noul "..."; done < titles.txt
 ```
 
-`--items-file` takes a JSON array when an item contains newlines.
+Say where the items come from: `--stdin` for one per line, `--items` to pass
+them directly, or `--items-file` for a JSON array when an item contains
+newlines. Standard input is never read unless you ask for it, because over MCP
+that stream carries the protocol.
+
+## Before you trust a question
+
+A question that reads well can still be worthless, and nothing about the
+answers tells you which kind you have. Measure it against items whose answers
+you already know:
+
+```sh
+jev eval --labels-file graded.json \
+  --noul "Is this urgent?" \
+  --noul "Does this need attention today?"
+```
+
+Read `auc` — the chance a true item outranks a false one — and treat it as the
+only portable number. Rewording moves every individual probability, so a
+threshold tuned against one phrasing is wrong against the next. Repeat `--noul`
+to rank several wordings in one run.

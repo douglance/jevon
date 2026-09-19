@@ -30,10 +30,10 @@ It is the wrong tool when you need prose or code out, when the options are not
 known ahead of time, when you need the reasoning rather than a probability, or
 when one call at low volume already has an LLM in the loop.
 
-[**When jev fits**](docs/when-to-use.md) covers the seven situations it is
-actually used for, what each costs, and the failure modes worth knowing before
-you build on it — including why overlapping labels should be ranked rather than
-forced into one bucket.
+[**When jev fits**](docs/when-to-use.md) covers the six situations it is
+actually used for — measured across 491 public projects — what each costs, and
+the failure modes worth knowing before you build on it, including why
+overlapping labels should be ranked rather than forced into one bucket.
 
 ## Commands
 
