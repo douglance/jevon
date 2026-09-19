@@ -1,0 +1,34 @@
+{
+  "doc_restates_the_name": {
+    "type": "noul",
+    "instructions": "This is one public Rust item with its documentation comment. Imagine a competent Rust programmer who can already read the item's name and its full type signature. Does the documentation tell them only what they could have worked out from the name and signature alone?",
+    "criteria": {
+      "true": "Yes. It expands the name into a sentence, restates the parameter or return types in prose, or says what the item is without saying when to reach for it, what it costs, what it assumes, or what happens at the edges.",
+      "false": "No. It states at least one thing the signature cannot: why this exists rather than the obvious alternative, an invariant the caller must uphold, a failure or edge case, a cost, or a consequence of choosing it."
+    }
+  },
+  "stringly_typed": {
+    "type": "noul",
+    "instructions": "This is one public Rust item with its signature. Consider only the data it accepts or returns. Does it carry a value as a string, an integer, or a boolean where the set of valid values is narrower than that type allows, so that a caller can construct a well-typed value the item must reject at runtime?",
+    "criteria": {
+      "true": "Yes. At least one string, integer or boolean in the signature stands for a fixed set of alternatives, a unit-bearing quantity, or a format the item parses or validates, so a wrong value type-checks and fails later.",
+      "false": "No. Every value in the signature either admits its whole type legitimately, or is already a dedicated enum, newtype or struct that makes a wrong value fail to compile."
+    }
+  },
+  "owns_what_it_could_borrow": {
+    "type": "noul",
+    "instructions": "This is one public Rust item with its signature. Consider what it requires the caller to give up. Does it demand ownership of, or allocate a copy of, data that it only reads?",
+    "criteria": {
+      "true": "Yes. It takes an owned value it never stores, consumes or mutates, or it clones and returns data the caller already holds, so the caller must allocate to call it.",
+      "false": "No. It borrows what it only reads, and takes ownership only where it stores, consumes, mutates or must outlive the input."
+    }
+  },
+  "signature_leaks_internals": {
+    "type": "noul",
+    "instructions": "This is one public Rust item with its signature. Imagine its implementation were rewritten to use a different internal data structure, while the behaviour a caller depends on stayed exactly the same. Would that rewrite force a breaking change to this signature?",
+    "criteria": {
+      "true": "Yes. The signature names a concrete container, a third-party type, or a field layout that belongs to how it is built rather than to what it promises, so callers are coupled to the implementation.",
+      "false": "No. The signature is stated in terms of what the item promises, through its own types, standard traits or generic bounds, so the implementation can change underneath it."
+    }
+  }
+}

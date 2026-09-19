@@ -1,0 +1,71 @@
+# Audits
+
+Auditing this codebase with the CLI it builds.
+
+```sh
+export TYPESAFE_API_KEY=...
+audits/audit.py
+```
+
+Two phases, in this order. First the question is scored against items whose
+answers were settled by reading them; only if it clears 85% does the audit run
+on the 31 public items whose answers nobody knows. A prompt that cannot
+reproduce known answers cannot be trusted on unknown ones, and a green run
+against no baseline is a number, not a measurement.
+
+## What these questions ask, and what they deliberately do not
+
+The workspace already denies `unwrap_used`, `expect_used`, `panic`,
+`missing_docs`, `wildcard_imports` and `too_many_arguments`, and
+`cargo xtask check` caps file length, function length, nesting, arity and
+cognitive complexity. Asking a model whether a function unwraps is paying for
+a worse answer to a question clippy has already settled — and settled
+exactly, which a probability never is.
+
+So every question here targets the gap: things that pass every gate and are
+still not canonical Rust.
+
+| Question | What it catches that no lint can |
+|---|---|
+| `doc_restates_the_name` | `missing_docs` proves a doc exists. It cannot read it. |
+| `stringly_typed` | A `&str` that stands for four alternatives type-checks fine. |
+| `owns_what_it_could_borrow` | Clippy catches some; the caller-facing ones need judgment about intent. |
+| `signature_leaks_internals` | Whether a type is part of the promise or of the implementation is a design question. |
+
+Each is one noul rather than a choice over quality labels. That is not taste:
+the sibling audit in the SDK repository measured four wordings against eleven
+tests whose strength had been settled by mutation, and overlapping choice
+options spread probability across labels that looked confident and were not,
+while a single falsifiable yes/no separated the classes far better. The same
+write-up records that adding a worked example to a criterion made results
+worse, because the model anchored on the example's surface form. There are no
+examples in the criteria here for that reason.
+
+## The evaluation set
+
+`eval/doc-restates-the-name.json` holds fourteen items, six labelled yes and
+eight no, each with the reason it was labelled that way. They are named by file
+and item rather than by index, so reordering the extractor cannot silently
+re-point a label at a different item; if one stops resolving, the run fails
+rather than scoring a stale set.
+
+Only `doc_restates_the_name` has a baseline so far. The other three questions
+run unscored, which means their output is a suggestion and should be read as
+one until each has a set of its own.
+
+## Reading the output
+
+An answer above 0.5 is a ranking, not a verdict. Confirm by reading the item
+before changing anything. The classifier sees one item at a time with no
+knowledge of the rest of the codebase, so it cannot tell a leaky signature from
+a deliberate one, and it will flag a type that is public precisely because
+callers are meant to depend on it.
+
+Every gate must be green before and after each change:
+
+```sh
+cargo fmt --all --check
+cargo xtask check
+cargo clippy --workspace --all-targets --all-features -- -D warnings
+cargo test --workspace --locked
+```

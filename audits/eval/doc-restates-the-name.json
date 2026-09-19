@@ -1,0 +1,35 @@
+{
+  "question": "doc_restates_the_name",
+  "why": "A question set that has not been scored against known answers is a guess with a JSON schema. These fourteen items were labelled by reading them, before any run, and they are the only thing that can tell a reworded prompt from a better one. Items are named rather than indexed so the set survives the extractor changing its order.",
+  "items": [
+    {"file": "crates/typesafe-sdk-cmd-ask/src/lib.rs", "name": "command", "expected": true,
+     "why": "\"Builds the `ask` command.\" is the name and the return type in a sentence."},
+    {"file": "crates/typesafe-sdk-cmd-classify/src/lib.rs", "name": "command", "expected": true,
+     "why": "Same shape, different command."},
+    {"file": "crates/typesafe-sdk-cmd-doctor/src/lib.rs", "name": "command", "expected": true,
+     "why": "Same shape, different command."},
+    {"file": "crates/typesafe-sdk-cmd-models/src/lib.rs", "name": "list", "expected": true,
+     "why": "Same shape, different command."},
+    {"file": "crates/typesafe-sdk-cmd-kit/src/usage.rs", "name": "Usage", "expected": true,
+     "why": "\"Tokens consumed.\" over fields already called input_tokens and output_tokens."},
+    {"file": "crates/typesafe-sdk-cmd-ask/src/lib.rs", "name": "Answered", "expected": true,
+     "why": "\"The answers, as the CLI reports them.\" restates the type name."},
+
+    {"file": "crates/jevon/src/lib.rs", "name": "build_cli", "expected": false,
+     "why": "States why it is public at all, and the drift a test would otherwise have."},
+    {"file": "crates/typesafe-sdk-cmd-ask/src/lib.rs", "name": "Options", "expected": false,
+     "why": "States why every field defaults, which the signature cannot show."},
+    {"file": "crates/typesafe-sdk-cmd-kit/src/input.rs", "name": "items", "expected": false,
+     "why": "States a real limit: line mode cannot carry an item containing a newline."},
+    {"file": "crates/typesafe-sdk-cmd-kit/src/lib.rs", "name": "code_for", "expected": false,
+     "why": "States that these names are a caller-visible contract, so changing one breaks callers."},
+    {"file": "crates/typesafe-sdk-cmd-kit/src/mcp.rs", "name": "read_only_remote", "expected": false,
+     "why": "Gives the reason the annotation is read-only despite reaching the network."},
+    {"file": "crates/typesafe-sdk-cmd-kit/src/usage.rs", "name": "add", "expected": false,
+     "why": "States the saturating choice and why reporting a total that went backwards is worse."},
+    {"file": "crates/typesafe-sdk-cmd-kit/src/lib.rs", "name": "client", "expected": false,
+     "why": "Documents the failure condition under # Errors, which the signature's Result cannot name."},
+    {"file": "crates/typesafe-sdk-cmd-ask/src/parse.rs", "name": "questions_from", "expected": false,
+     "why": "Documents which error variant comes back and when."}
+  ]
+}
