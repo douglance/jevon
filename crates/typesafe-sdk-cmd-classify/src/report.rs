@@ -43,6 +43,7 @@ pub struct Classified {
 
 impl Classified {
     /// Folds the per-item results, in order, into the reported shape.
+    #[must_use]
     pub fn of(model: String, answered: Vec<(Item, Usage)>) -> Self {
         let mut usage = Usage::default();
         let items: Vec<Item> = answered

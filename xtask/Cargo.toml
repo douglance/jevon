@@ -7,7 +7,7 @@ license.workspace = true
 repository.workspace = true
 homepage.workspace = true
 publish = false
-description = "Structure, size and complexity gates for the typesafe-sdk workspace."
+description = "Structure, size and complexity gates for the jev command-line workspace."
 
 [dependencies]
 anyhow.workspace = true

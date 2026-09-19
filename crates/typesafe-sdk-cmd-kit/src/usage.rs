@@ -23,7 +23,7 @@ impl Usage {
     /// Saturating rather than wrapping: a batch large enough to overflow a
     /// `u64` cannot happen, but reporting a total that went backwards would be
     /// worse than reporting one that stopped climbing.
-    pub fn add(&mut self, other: &typesafe_sdk_answers::Usage) {
+    pub const fn add(&mut self, other: &typesafe_sdk_answers::Usage) {
         self.input_tokens = self.input_tokens.saturating_add(other.input_tokens);
         self.output_tokens = self.output_tokens.saturating_add(other.output_tokens);
     }

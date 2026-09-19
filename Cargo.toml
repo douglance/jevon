@@ -8,11 +8,11 @@ version = "0.6.0"
 edition = "2024"
 rust-version = "1.98"
 license = "MIT"
-repository = "https://github.com/douglance/typesafe-sdk-rs"
-homepage = "https://github.com/douglance/typesafe-sdk-rs"
+repository = "https://github.com/douglance/jevon"
+homepage = "https://github.com/douglance/jevon"
 readme = "README.md"
-keywords = ["typesafe", "llm", "sdk", "cli", "mcp"]
-categories = ["api-bindings", "command-line-utilities"]
+keywords = ["typesafe", "llm", "cli", "mcp", "agent"]
+categories = ["command-line-utilities", "api-bindings"]
 
 [workspace.lints.rust]
 missing_docs = "deny"
@@ -48,42 +48,37 @@ multiple_crate_versions = "allow"
 redundant_pub_crate = "allow"
 
 [workspace.dependencies]
-# Internal crates. Listed here so the dependency graph is visible in one place.
-typesafe-sdk-answers   = { path = "crates/typesafe-sdk-answers",   version = "0.6.0" }
-typesafe-sdk-client    = { path = "crates/typesafe-sdk-client",    version = "0.6.0" }
-typesafe-sdk-cmd-ask   = { path = "crates/typesafe-sdk-cmd-ask",   version = "0.6.0" }
+# Command crates, which live here. Listed so the graph is visible in one place.
+typesafe-sdk-cmd-kit      = { path = "crates/typesafe-sdk-cmd-kit",      version = "0.6.0" }
+typesafe-sdk-cmd-ask      = { path = "crates/typesafe-sdk-cmd-ask",      version = "0.6.0" }
 typesafe-sdk-cmd-classify = { path = "crates/typesafe-sdk-cmd-classify", version = "0.6.0" }
-typesafe-sdk-cmd-doctor = { path = "crates/typesafe-sdk-cmd-doctor", version = "0.6.0" }
-typesafe-sdk-cmd-kit   = { path = "crates/typesafe-sdk-cmd-kit",   version = "0.6.0" }
-typesafe-sdk-cmd-models = { path = "crates/typesafe-sdk-cmd-models", version = "0.6.0" }
-typesafe-sdk-config    = { path = "crates/typesafe-sdk-config",    version = "0.6.0" }
-typesafe-sdk-derive    = { path = "crates/typesafe-sdk-derive",    version = "0.6.0" }
-typesafe-sdk-env       = { path = "crates/typesafe-sdk-env",       version = "0.6.0" }
-typesafe-sdk-error     = { path = "crates/typesafe-sdk-error",     version = "0.6.0" }
-typesafe-sdk-headers   = { path = "crates/typesafe-sdk-headers",   version = "0.6.0" }
-typesafe-sdk-http      = { path = "crates/typesafe-sdk-http",      version = "0.6.0" }
-typesafe-sdk-log       = { path = "crates/typesafe-sdk-log",       version = "0.6.0" }
-typesafe-sdk-models    = { path = "crates/typesafe-sdk-models",    version = "0.6.0" }
-typesafe-sdk-questions = { path = "crates/typesafe-sdk-questions", version = "0.6.0" }
-typesafe-sdk-retry     = { path = "crates/typesafe-sdk-retry",     version = "0.6.0" }
-typesafe-sdk-runtime   = { path = "crates/typesafe-sdk-runtime",   version = "0.6.0" }
+typesafe-sdk-cmd-doctor   = { path = "crates/typesafe-sdk-cmd-doctor",   version = "0.6.0" }
+typesafe-sdk-cmd-models   = { path = "crates/typesafe-sdk-cmd-models",   version = "0.6.0" }
+
+# The SDK, consumed from crates.io like any other user would. Depending on it by
+# version rather than by path is the point of the split: the commands are held
+# to the published API, so an accidental reach into a private corner of the SDK
+# fails here rather than after a release.
+typesafe-sdk-answers   = "0.6"
+typesafe-sdk-client    = "0.6"
+typesafe-sdk-config    = "0.6"
+typesafe-sdk-env       = "0.6"
+typesafe-sdk-error     = "0.6"
+typesafe-sdk-headers   = "0.6"
+typesafe-sdk-http      = "0.6"
+typesafe-sdk-models    = "0.6"
+typesafe-sdk-questions = "0.6"
 
 # Third party.
 anyhow = "1"
-async-trait = "0.1"
 futures = "0.3"
-http = "1"
-httpdate = "1"
 incurs = "0.7"
 indexmap = { version = "2", features = ["serde"] }
 proc-macro2 = { version = "1", features = ["span-locations"] }
-quote = "1"
-reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls", "stream"] }
 schemars = "1"
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["preserve_order"] }
 syn = { version = "2", features = ["full", "extra-traits", "visit"] }
-thiserror = "2"
 tokio = { version = "1", features = ["rt", "macros", "time", "sync"] }
 toml = "0.9"
 walkdir = "2"

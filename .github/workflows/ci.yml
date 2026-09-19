@@ -63,19 +63,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@1.98.1
       - uses: Swatinem/rust-cache@v2
-      # No API key: the live conformance tests skip themselves, so this job
-      # stays offline and deterministic.
+      # Nothing here talks to the API: the command crates are driven through the
+      # command graph in-process, so this job stays offline and deterministic.
+      # Live conformance belongs to the SDK, and runs in typesafe-sdk-rs.
       - run: cargo test --workspace --locked
-
-  conformance:
-    # The only job that proves the SDK talks to TypeSafe rather than to its own
-    # assumptions. Skipped on forks, which have no secret.
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.98.1
-      - uses: Swatinem/rust-cache@v2
-      - run: cargo test -p typesafe-sdk-tests --locked
-        env:
-          TYPESAFE_API_KEY: ${{ secrets.TYPESAFE_API_KEY }}

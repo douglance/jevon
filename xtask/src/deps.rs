@@ -11,7 +11,7 @@ use anyhow::Result;
 
 use crate::cycles::{self, Graph};
 use crate::discover::{self, CrateDir};
-use crate::layers::{EXCLUSIVE, LEAF_FORBIDDEN, layer_of};
+use crate::layers::{EXCLUSIVE, FORBIDDEN, layer_of};
 use crate::violation::Violation;
 
 const GATE: &str = "deps";
@@ -42,7 +42,7 @@ fn check_crate(krate: &CrateDir, deps: &BTreeSet<String>) -> Vec<Violation> {
             &krate.manifest,
             None,
             format!(
-                "{} is not placed in the layer map in xtask/src/deps.rs",
+                "{} is not placed in the layer map in xtask/src/layers.rs",
                 krate.name
             ),
         ));
@@ -57,7 +57,7 @@ fn check_crate(krate: &CrateDir, deps: &BTreeSet<String>) -> Vec<Violation> {
 
 fn check_edge(krate: &CrateDir, own_layer: u8, dep: &str) -> Vec<Violation> {
     [
-        leaf_purity(krate, own_layer, dep),
+        transport_purity(krate, dep),
         exclusivity(krate, dep),
         direction(krate, own_layer, dep),
     ]
@@ -66,17 +66,20 @@ fn check_edge(krate: &CrateDir, own_layer: u8, dep: &str) -> Vec<Violation> {
     .collect()
 }
 
-/// Layer 0 holds values and decisions; a transport there is a design error.
-fn leaf_purity(krate: &CrateDir, own_layer: u8, dep: &str) -> Option<Violation> {
-    (own_layer == 0 && LEAF_FORBIDDEN.contains(&dep)).then(|| {
+/// The SDK owns the wire; a command holding its own HTTP client is a design error.
+fn transport_purity(krate: &CrateDir, dep: &str) -> Option<Violation> {
+    FORBIDDEN.contains(&dep).then(|| {
         deny(
             krate,
-            format!("{} is layer 0 and must not depend on {dep}", krate.name),
+            format!(
+                "{} must not depend on {dep}; the SDK owns the transport",
+                krate.name
+            ),
         )
     })
 }
 
-/// Some third-party crates are owned by exactly one façade.
+/// Some crates are owned by exactly one façade.
 fn exclusivity(krate: &CrateDir, dep: &str) -> Option<Violation> {
     let &(_, owner) = EXCLUSIVE.iter().find(|&&(name, _)| name == dep)?;
     (owner != krate.name).then(|| {

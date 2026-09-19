@@ -1,4 +1,4 @@
-//! Structure, size and complexity gates for the typesafe-sdk workspace.
+//! Structure, size and complexity gates for the jev command-line workspace.
 //!
 //! These exist because the alternative does not work. Every repository on this
 //! machine that stayed small has a gate like this; the ones that did not have
