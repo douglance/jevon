@@ -1206,7 +1206,7 @@ checksum = "8f42a60cbdf9a97f5d2305f08a87dc4e09308d1276d28c869c684d7777685682"
 
 [[package]]
 name = "jevon"
-version = "0.7.0"
+version = "0.7.1"
 dependencies = [
  "incurs",
  "serde_json",
@@ -2713,7 +2713,7 @@ dependencies = [
 
 [[package]]
 name = "typesafe-sdk-cmd-ask"
-version = "0.7.0"
+version = "0.7.1"
 dependencies = [
  "incurs",
  "schemars",
@@ -2728,7 +2728,7 @@ dependencies = [
 
 [[package]]
 name = "typesafe-sdk-cmd-classify"
-version = "0.7.0"
+version = "0.7.1"
 dependencies = [
  "futures",
  "incurs",
@@ -2745,7 +2745,7 @@ dependencies = [
 
 [[package]]
 name = "typesafe-sdk-cmd-doctor"
-version = "0.7.0"
+version = "0.7.1"
 dependencies = [
  "incurs",
  "schemars",
@@ -2759,7 +2759,7 @@ dependencies = [
 
 [[package]]
 name = "typesafe-sdk-cmd-kit"
-version = "0.7.0"
+version = "0.7.1"
 dependencies = [
  "incurs",
  "schemars",
@@ -2777,7 +2777,7 @@ dependencies = [
 
 [[package]]
 name = "typesafe-sdk-cmd-models"
-version = "0.7.0"
+version = "0.7.1"
 dependencies = [
  "incurs",
  "schemars",
@@ -3412,7 +3412,7 @@ checksum = "ea6fc2961e4ef194dcbfe56bb845534d0dc8098940c7e5c012a258bfec6701bd"
 
 [[package]]
 name = "xtask"
-version = "0.7.0"
+version = "0.7.1"
 dependencies = [
  "anyhow",
  "proc-macro2",

@@ -4,7 +4,7 @@ default-members = ["crates/jevon"]
 resolver = "3"
 
 [workspace.package]
-version = "0.7.0"
+version = "0.7.1"
 edition = "2024"
 rust-version = "1.98"
 license = "MIT"
@@ -49,11 +49,11 @@ redundant_pub_crate = "allow"
 
 [workspace.dependencies]
 # Command crates, which live here. Listed so the graph is visible in one place.
-typesafe-sdk-cmd-kit      = { path = "crates/typesafe-sdk-cmd-kit",      version = "0.7.0" }
-typesafe-sdk-cmd-ask      = { path = "crates/typesafe-sdk-cmd-ask",      version = "0.7.0" }
-typesafe-sdk-cmd-classify = { path = "crates/typesafe-sdk-cmd-classify", version = "0.7.0" }
-typesafe-sdk-cmd-doctor   = { path = "crates/typesafe-sdk-cmd-doctor",   version = "0.7.0" }
-typesafe-sdk-cmd-models   = { path = "crates/typesafe-sdk-cmd-models",   version = "0.7.0" }
+typesafe-sdk-cmd-kit      = { path = "crates/typesafe-sdk-cmd-kit",      version = "0.7.1" }
+typesafe-sdk-cmd-ask      = { path = "crates/typesafe-sdk-cmd-ask",      version = "0.7.1" }
+typesafe-sdk-cmd-classify = { path = "crates/typesafe-sdk-cmd-classify", version = "0.7.1" }
+typesafe-sdk-cmd-doctor   = { path = "crates/typesafe-sdk-cmd-doctor",   version = "0.7.1" }
+typesafe-sdk-cmd-models   = { path = "crates/typesafe-sdk-cmd-models",   version = "0.7.1" }
 
 # The SDK, consumed from crates.io like any other user would. Depending on it by
 # version rather than by path is the point of the split: the commands are held
