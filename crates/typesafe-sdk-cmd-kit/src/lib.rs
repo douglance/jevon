@@ -10,7 +10,7 @@ mod input;
 mod mcp;
 mod usage;
 
-pub use input::{STDIN, items, lines, questions, text};
+pub use input::{STDIN, items, lines, questions, read_file, text};
 pub use mcp::{read_only, read_only_remote};
 pub use usage::Usage;
 

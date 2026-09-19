@@ -1214,6 +1214,7 @@ dependencies = [
  "typesafe-sdk-cmd-ask",
  "typesafe-sdk-cmd-classify",
  "typesafe-sdk-cmd-doctor",
+ "typesafe-sdk-cmd-eval",
  "typesafe-sdk-cmd-models",
 ]
 
@@ -2755,6 +2756,22 @@ dependencies = [
  "typesafe-sdk-config",
  "typesafe-sdk-env",
  "typesafe-sdk-error",
+]
+
+[[package]]
+name = "typesafe-sdk-cmd-eval"
+version = "0.7.2"
+dependencies = [
+ "futures",
+ "incurs",
+ "schemars",
+ "serde",
+ "serde_json",
+ "typesafe-sdk-answers",
+ "typesafe-sdk-client",
+ "typesafe-sdk-cmd-kit",
+ "typesafe-sdk-error",
+ "typesafe-sdk-questions",
 ]
 
 [[package]]

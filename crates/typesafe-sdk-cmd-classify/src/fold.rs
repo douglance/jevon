@@ -7,6 +7,14 @@ use typesafe_sdk_cmd_kit::Usage;
 
 use crate::report::{Answered, Classified, Item};
 
+/// Records a model version the first time it is seen, keeping the order they
+/// appeared in so the first is the one a single-version run reports.
+fn note(seen: &mut Vec<String>, model: Option<String>) {
+    if let Some(model) = model.filter(|m| !seen.contains(m)) {
+        seen.push(model);
+    }
+}
+
 impl Classified {
     /// Folds the per-item results, in order, into the reported shape.
     #[must_use]
@@ -17,11 +25,7 @@ impl Classified {
         for row in answered {
             usage.input_tokens = usage.input_tokens.saturating_add(row.usage.input_tokens);
             usage.output_tokens = usage.output_tokens.saturating_add(row.usage.output_tokens);
-            if let Some(model) = row.model {
-                if !seen.contains(&model) {
-                    seen.push(model);
-                }
-            }
+            note(&mut seen, row.model);
             items.push(row.item);
         }
         Self {
@@ -43,7 +47,7 @@ impl Classified {
     /// nothing at all did not work, and exiting zero on it lets a broken key
     /// pass for success in any script or CI job.
     #[must_use]
-    pub fn exit_code(&self) -> Option<i32> {
+    pub const fn exit_code(&self) -> Option<i32> {
         let answered = self.items.len().saturating_sub(self.failed);
         match (answered, self.failed) {
             (0, _) => Some(1),

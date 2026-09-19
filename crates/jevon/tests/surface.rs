@@ -41,7 +41,10 @@ async fn every_command_is_exposed_as_a_tool() {
         .map(|tool| tool.name.clone())
         .collect();
     names.sort();
-    assert_eq!(names, vec!["ask", "classify", "doctor", "models_list"]);
+    assert_eq!(
+        names,
+        vec!["ask", "classify", "doctor", "eval", "models_list"]
+    );
 }
 
 #[tokio::test]

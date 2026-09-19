@@ -101,7 +101,7 @@ async fn every_command_carries_worked_examples() {
     let (_, out) = observe(&["--llms-full", "--format", "json"]).await;
     let manifest: serde_json::Value = serde_json::from_str(&out).unwrap();
 
-    for command in ["ask", "classify", "doctor", "models list"] {
+    for command in ["ask", "classify", "doctor", "eval", "models list"] {
         let found = manifest["commands"]
             .as_array()
             .unwrap()

@@ -52,6 +52,7 @@ redundant_pub_crate = "allow"
 typesafe-sdk-cmd-kit      = { path = "crates/typesafe-sdk-cmd-kit",      version = "0.7.2" }
 typesafe-sdk-cmd-ask      = { path = "crates/typesafe-sdk-cmd-ask",      version = "0.7.2" }
 typesafe-sdk-cmd-classify = { path = "crates/typesafe-sdk-cmd-classify", version = "0.7.2" }
+typesafe-sdk-cmd-eval     = { path = "crates/typesafe-sdk-cmd-eval",     version = "0.7.2" }
 typesafe-sdk-cmd-doctor   = { path = "crates/typesafe-sdk-cmd-doctor",   version = "0.7.2" }
 typesafe-sdk-cmd-models   = { path = "crates/typesafe-sdk-cmd-models",   version = "0.7.2" }
 

@@ -1,0 +1,27 @@
+[package]
+name = "typesafe-sdk-cmd-eval"
+readme.workspace = true
+description = "The `eval` command for jev, the TypeSafe command-line interface."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+incurs.workspace = true
+schemars.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+typesafe-sdk-answers.workspace = true
+futures.workspace = true
+typesafe-sdk-client.workspace = true
+typesafe-sdk-questions.workspace = true
+typesafe-sdk-cmd-kit.workspace = true
+typesafe-sdk-error.workspace = true
+
+[lints]
+workspace = true

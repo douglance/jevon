@@ -19,6 +19,7 @@ pub fn build_cli() -> Cli {
         .description("Ask TypeSafe questions about text and get typed answers")
         .command("ask", typesafe_sdk_cmd_ask::command())
         .command("classify", typesafe_sdk_cmd_classify::command())
+        .command("eval", typesafe_sdk_cmd_eval::command())
         .command("doctor", typesafe_sdk_cmd_doctor::command())
         .group(models_group())
 }

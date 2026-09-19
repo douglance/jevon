@@ -13,6 +13,7 @@ pub(crate) const LAYERS: &[(&str, u8)] = &[
     // 1 — one crate per command. Siblings, never aware of each other.
     ("typesafe-sdk-cmd-ask", 1),
     ("typesafe-sdk-cmd-classify", 1),
+    ("typesafe-sdk-cmd-eval", 1),
     ("typesafe-sdk-cmd-doctor", 1),
     ("typesafe-sdk-cmd-models", 1),
     // 2 — the binary that assembles them, and the gates.

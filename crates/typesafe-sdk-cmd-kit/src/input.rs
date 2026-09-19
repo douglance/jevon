@@ -78,7 +78,11 @@ fn parse(raw: &str, flag: &str) -> Result<Questions> {
     })
 }
 
-fn read_file(path: &str) -> Result<String> {
+/// The contents of a file, or standard input when the path is `-`.
+///
+/// # Errors
+/// Returns [`Error::Invalid`] when the file cannot be read.
+pub fn read_file(path: &str) -> Result<String> {
     if path == STDIN {
         return text(STDIN);
     }
