@@ -47,11 +47,17 @@ def extract():
         return json.loads(out.stdout), json.loads(pathlib.Path(loc.name).read_text())
 
 
+def write_json(value, suffix=".json"):
+    """A closed temp file holding `value`. Closed matters: an open handle is an
+    empty file to the subprocess that reads it."""
+    with tempfile.NamedTemporaryFile("w", suffix=suffix, delete=False) as handle:
+        json.dump(value, handle)
+        return handle.name
+
+
 def classify(items, questions, concurrency=8):
     """Run `jev classify` over `items` and return its parsed report."""
-    with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as handle:
-        json.dump(items, handle)
-        items_file = handle.name
+    items_file = write_json(items)
 
     result = subprocess.run(
         [JEV, "classify", "--questions-file", str(questions),
@@ -74,42 +80,61 @@ def probability(answers, question):
     return float(answer) if isinstance(answer, (int, float)) else None
 
 
-def run_eval(spec_path):
-    """Score one question against answers settled by hand. Returns True to proceed."""
+def resolve(spec_path, locations):
+    """Turn one evaluation set into (question, cases, texts), or fail loudly.
+
+    Every set is resolved before any of them is classified, so a stale or
+    degenerate set costs nothing and is reported before the first API call
+    rather than after an unrelated set has already been paid for.
+    """
     spec = json.loads(spec_path.read_text())
-    question = spec["question"]
-    _, locations = extract()
     index = {(item["file"], item["name"]): item for item in locations}
 
-    wanted, texts = [], []
+    cases, texts = [], []
     for case in spec["items"]:
-        found = index.get((case["file"], case["name"]))
-        if not found:
-            die(f"evaluation item {case['file']}::{case['name']} no longer exists; "
-                "the set is stale and scoring it would be meaningless")
-        doc = found["doc"] or "(no documentation)"
-        texts.append(f"/// {doc}\n{found['signature']}")
-        wanted.append(case)
+        # A case is either an item in this repository, or one written by hand
+        # because the repository has no example of that class. Both are needed:
+        # a set with only one label scores a prompt that always answers that
+        # label at 100%, which measures nothing.
+        if "text" in case:
+            texts.append(case["text"])
+        else:
+            found = index.get((case["file"], case["name"]))
+            if not found:
+                die(f"evaluation item {case['file']}::{case['name']} no longer exists; "
+                    "the set is stale and scoring it would be meaningless")
+            doc = found["doc"] or "(no documentation)"
+            texts.append(f"/// {doc}\n{found['signature']}")
+        cases.append(case)
 
+    if len({case["expected"] for case in cases}) < 2:
+        die(f"{spec_path.name} labels only one class; such a set cannot "
+            "distinguish a good prompt from a constant answer")
+
+    return spec["question"], cases, texts
+
+
+def run_eval(question, wanted, texts):
+    """Score one question against answers settled by hand. Returns True to proceed."""
     single = {question: json.loads((AUDITS / "rust-canon.json").read_text())[question]}
-    with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as handle:
-        json.dump(single, handle)
-        report = classify(texts, handle.name)
+    report = classify(texts, write_json(single))
 
     correct = uncertain = 0
     yes_when_true, yes_when_false = [], []
     print(f"\n  {question} — {len(wanted)} items with known answers\n")
     for case, got in zip(wanted, report["items"]):
+        label = case.get("name") or case.get("as", "constructed")
         p = probability(got.get("answers"), question)
         if p is None:
-            die(f"no answer came back for {case['name']}: {got.get('error')}")
+            die(f"no answer came back for {label}: {got.get('error')}")
         said = p >= 0.5
         ok = said == case["expected"]
         correct += ok
         uncertain += bool(got.get("uncertain"))
         (yes_when_true if case["expected"] else yes_when_false).append(p)
+        made = " *" if "text" in case else ""
         print(f"    {'ok  ' if ok else 'MISS'}  p={p:.2f}  "
-              f"expected={'yes' if case['expected'] else 'no ':<3}  {case['name']}")
+              f"expected={'yes' if case['expected'] else 'no ':<3}  {label}{made}")
 
     mean = lambda xs: sum(xs) / len(xs) if xs else 0.0
     separation = mean(yes_when_true) - mean(yes_when_false)
@@ -159,7 +184,15 @@ def main():
         die("TYPESAFE_API_KEY is not set. `jev doctor` says the same thing at more length.")
 
     if not args.skip_eval:
-        if not run_eval(AUDITS / "eval" / "doc-restates-the-name.json"):
+        specs = sorted((AUDITS / "eval").glob("*.json"))
+        scored = {json.loads(s.read_text())["question"] for s in specs}
+        asked = set(json.loads((AUDITS / "rust-canon.json").read_text()))
+        if asked - scored:
+            die(f"no evaluation set for {', '.join(sorted(asked - scored))}; "
+                "write one or pass --skip-eval and read the output as a guess")
+        _, locations = extract()
+        resolved = [resolve(spec, locations) for spec in specs]
+        if not all([run_eval(*one) for one in resolved]):
             sys.exit(2)
     if not args.eval_only:
         audit(AUDITS / "rust-canon.json")

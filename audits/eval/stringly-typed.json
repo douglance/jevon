@@ -1,0 +1,23 @@
+{
+  "question": "stringly_typed",
+  "why": "This codebase has real examples of both classes, so nothing here is constructed. The positives are deliberate designs, not accidents — a CLI has to accept strings at its edge — which is exactly why the question is worth asking of something that already passes every lint.",
+  "items": [
+    {"file": "crates/typesafe-sdk-cmd-kit/src/input.rs", "name": "questions", "expected": true,
+     "why": "Two Option<&str> encode 'inline JSON or a path, but not both'. A caller can pass both, or neither, and only find out at runtime."},
+    {"file": "crates/typesafe-sdk-cmd-kit/src/input.rs", "name": "text", "expected": true,
+     "why": "The &str is a literal value or the sentinel `-`. The sentinel is a second meaning smuggled into the same type."},
+    {"file": "crates/typesafe-sdk-cmd-kit/src/input.rs", "name": "items", "expected": true,
+     "why": "Same sentinel, same smuggling: a path, or `-` meaning stdin."},
+    {"file": "crates/typesafe-sdk-cmd-kit/src/lib.rs", "name": "code_for", "expected": true,
+     "why": "Returns &'static str drawn from a fixed set of contract codes. An enum would make a typo fail to compile."},
+
+    {"file": "crates/typesafe-sdk-cmd-kit/src/mcp.rs", "name": "read_only", "expected": false,
+     "why": "The &str is a human-readable title. Any string is genuinely valid."},
+    {"file": "crates/typesafe-sdk-cmd-kit/src/usage.rs", "name": "add", "expected": false,
+     "why": "Two token counts as u64, where every u64 is a legitimate count."},
+    {"file": "crates/typesafe-sdk-cmd-kit/src/lib.rs", "name": "retryable", "expected": false,
+     "why": "Takes a typed &Error and returns a genuine yes/no. The bool is the whole answer, not a stand-in for one."},
+    {"file": "crates/jevon/src/lib.rs", "name": "build_cli", "expected": false,
+     "why": "Takes nothing and returns a built type. No value to mistype."}
+  ]
+}
