@@ -61,16 +61,21 @@ jev ask "$TICKET" --questions '{
 }'
 ```
 
-`classify` takes the list on stdin, so a batch is one client and one connection
-rather than a shell loop:
+`classify` takes the whole list in one invocation, so a batch is one client and
+one connection rather than a shell loop. Say where the items come from —
+`--stdin`, `--items`, or `--items-file`:
 
 ```sh
-jev classify --noul "Is this a bug report?" --min-confidence 0.7 < titles.txt
+jev classify --stdin --noul "Is this a bug report?" --min-confidence 0.7 < titles.txt
 ```
 
-`uncertain` counts answers below `--min-confidence`. Those are the rows worth
-reading rather than acting on, and usually mean the item carried too little
-context to judge.
+`uncertain` counts rows with at least one answer below `--min-confidence`, so
+across several questions it climbs fast and says nothing about which one was
+shaky — read `uncertain_by_question` for that. A low-confidence answer usually
+means the item carried too little context to judge.
+
+No threshold is portable: rewording a question moves every probability it
+produces. Find the right one with `jev eval` rather than inheriting it.
 
 ## Agents
 
