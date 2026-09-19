@@ -11,6 +11,7 @@
 #![allow(
     clippy::unwrap_used,
     clippy::expect_used,
+    clippy::panic,
     reason = "a test that cannot fail loudly is not a test"
 )]
 
@@ -23,22 +24,32 @@ use std::time::Duration;
 /// from no reply, not to measure latency.
 const PATIENCE: Duration = Duration::from_secs(10);
 
-fn frame(id: u32, method: &str, params: serde_json::Value) -> String {
+fn frame(id: u32, method: &str, params: &serde_json::Value) -> String {
     serde_json::json!({"jsonrpc": "2.0", "id": id, "method": method, "params": params}).to_string()
+}
+
+/// The request id a reply line answers, if it is one.
+#[expect(
+    clippy::cast_possible_truncation,
+    reason = "ids in this test are small"
+)]
+fn answered_id(line: &str) -> Option<u32> {
+    let value: serde_json::Value = serde_json::from_str(line).ok()?;
+    let id = value.get("id")?.as_u64()?;
+    Some(id as u32)
 }
 
 /// Collects answered request ids off the server's stdout until it goes quiet.
 fn answered(stdout: ChildStdout) -> mpsc::Receiver<u32> {
     let (tx, rx) = mpsc::channel();
     std::thread::spawn(move || {
-        for line in BufReader::new(stdout).lines().map_while(Result::ok) {
-            if let Ok(value) = serde_json::from_str::<serde_json::Value>(&line) {
-                if let Some(id) = value.get("id").and_then(serde_json::Value::as_u64) {
-                    #[expect(clippy::cast_possible_truncation, reason = "ids here are small")]
-                    let _ = tx.send(id as u32);
-                }
-            }
-        }
+        BufReader::new(stdout)
+            .lines()
+            .map_while(Result::ok)
+            .filter_map(|line| answered_id(&line))
+            .for_each(|id| {
+                let _ = tx.send(id);
+            });
     });
     rx
 }
@@ -48,12 +59,8 @@ fn expect_reply(rx: &mpsc::Receiver<u32>, want: u32, seen: &mut Vec<u32>) {
     let deadline = std::time::Instant::now() + PATIENCE;
     while std::time::Instant::now() < deadline {
         match rx.recv_timeout(Duration::from_millis(250)) {
-            Ok(id) => {
-                seen.push(id);
-                if id == want {
-                    return;
-                }
-            }
+            Ok(id) if id == want => return,
+            Ok(id) => seen.push(id),
             Err(mpsc::RecvTimeoutError::Timeout) => {}
             Err(mpsc::RecvTimeoutError::Disconnected) => break,
         }
@@ -68,7 +75,7 @@ fn handshake(stdin: &mut impl Write) {
         "capabilities": {},
         "clientInfo": {"name": "regression", "version": "1"},
     });
-    writeln!(stdin, "{}", frame(1, "initialize", hello)).unwrap();
+    writeln!(stdin, "{}", frame(1, "initialize", &hello)).unwrap();
     writeln!(
         stdin,
         "{}",
@@ -107,13 +114,13 @@ fn classify_without_an_item_source_answers_instead_of_eating_the_protocol() {
         "name": "call_read_tool",
         "arguments": {"name": "classify", "arguments": {"noul": "Is this a greeting?"}},
     });
-    writeln!(stdin, "{}", frame(2, "tools/call", call)).unwrap();
+    writeln!(stdin, "{}", frame(2, "tools/call", &call)).unwrap();
     stdin.flush().unwrap();
     expect_reply(&rx, 2, &mut seen);
 
     // The frame-eating showed up only after a pause, so the pause is the test.
     std::thread::sleep(Duration::from_secs(4));
-    writeln!(stdin, "{}", frame(3, "tools/list", serde_json::json!({}))).unwrap();
+    writeln!(stdin, "{}", frame(3, "tools/list", &serde_json::json!({}))).unwrap();
     stdin.flush().unwrap();
     expect_reply(&rx, 3, &mut seen);
 
