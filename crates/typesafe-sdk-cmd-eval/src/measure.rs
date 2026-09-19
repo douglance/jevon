@@ -16,7 +16,11 @@ pub(crate) type Picked = (bool, bool, f64);
 /// The smallest side of a labelled set worth quoting a number from.
 ///
 /// Below this an AUC is a small sample rather than a measurement: 25 items once
-/// reported 1.0 here, which said more about the sample than the question.
+/// reported 1.0 here and 0.673 on a rerun of the same question.
+///
+/// It is the *smaller* side that decides this. A set of 87 with only 18
+/// positives is an 18-item measurement wearing an 87-item coat, and reading the
+/// total is how that gets missed.
 pub(crate) const ENOUGH: usize = 30;
 
 /// Measures a yes/no question by how well it orders the labelled items.
@@ -35,7 +39,7 @@ pub(crate) fn noul(question: &str, scored: &[(f64, bool)]) -> Measured {
         confident_share: None,
         spread: sd,
         undecided: mid,
-        warnings: warn::about(auc, sd, mid, scored.len()),
+        warnings: warn::about(auc, sd, mid, smaller_side(scored)),
     }
 }
 
@@ -62,6 +66,12 @@ pub(crate) fn choice(question: &str, picked: &[Picked]) -> Measured {
         undecided: None,
         warnings: warn::about(None, None, None, picked.len()),
     }
+}
+
+/// How many items are on the thinner side of the labels.
+fn smaller_side(scored: &[(f64, bool)]) -> usize {
+    let positives = scored.iter().filter(|(_, t)| *t).count();
+    positives.min(scored.len() - positives)
 }
 
 /// Pairs a noul answer with its label, dropping what cannot be compared.
@@ -99,5 +109,32 @@ const fn into_cut(cut: &score::Cut) -> Cut {
         flagged: cut.flagged,
         precision: cut.precision,
         recall: cut.recall,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::smaller_side;
+
+    /// The count that decides whether a number is worth quoting is the thinner
+    /// side, not the total. 87 items with 18 positives is an 18-item
+    /// measurement, and reading the total is how that gets missed.
+    #[test]
+    fn the_smaller_side_is_what_counts() {
+        let lopsided: Vec<(f64, bool)> = (0..87).map(|i| (0.5, i < 18)).collect();
+        assert_eq!(smaller_side(&lopsided), 18);
+    }
+
+    #[test]
+    fn an_even_split_counts_either_half() {
+        let even: Vec<(f64, bool)> = (0..10).map(|i| (0.5, i < 5)).collect();
+        assert_eq!(smaller_side(&even), 5);
+    }
+
+    /// One-sided labels measure nothing, and nothing is smaller than one side.
+    #[test]
+    fn one_sided_labels_have_no_thinner_side() {
+        let all_true: Vec<(f64, bool)> = (0..40).map(|_| (0.5, true)).collect();
+        assert_eq!(smaller_side(&all_true), 0);
     }
 }

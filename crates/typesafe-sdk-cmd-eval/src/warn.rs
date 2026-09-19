@@ -6,6 +6,8 @@
 use crate::spread::degenerate;
 
 /// Everything wrong with one question's measurement.
+/// `items` is the smaller side of the labels for a yes/no question, and the
+/// whole set for a choice, which has no two sides to be thin on.
 pub(crate) fn about(
     auc: Option<f64>,
     spread: Option<f64>,
@@ -15,8 +17,9 @@ pub(crate) fn about(
     let mut warnings = Vec::new();
     if items < crate::measure::ENOUGH {
         warnings.push(format!(
-            "Only {items} items were comparable, so treat these numbers as a \
-             direction rather than a measurement."
+            "Only {items} items sit on the thinner side of the labels, so treat these \
+             numbers as a direction rather than a measurement — an AUC is only as good \
+             as the smaller side, however many items were judged in total."
         ));
     }
     if degenerate(spread, undecided) {
