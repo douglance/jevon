@@ -4,7 +4,7 @@ use futures::StreamExt as _;
 use typesafe_sdk_answers::Answer;
 use typesafe_sdk_answers::SystemOneResponse;
 use typesafe_sdk_client::{Client, SystemOneRequest};
-use typesafe_sdk_cmd_kit::{Usage, client, items as read_items, lines};
+use typesafe_sdk_cmd_kit::{Usage, client, read, resolve};
 
 use crate::report::Answered;
 use typesafe_sdk_error::Result;
@@ -21,10 +21,11 @@ use crate::report::{Classified, Item};
 /// items, and a client error when one cannot be built.
 pub(crate) async fn classify(options: &Options) -> Result<Classified> {
     let asked = question_set(options)?;
-    let items = match options.items_file.as_deref() {
-        Some(path) => read_items(path)?,
-        None => lines()?,
-    };
+    let items = read(resolve(
+        &options.items,
+        options.items_file.as_deref(),
+        options.stdin,
+    )?)?;
     let client = client()?;
     let threshold = options.min_confidence;
 

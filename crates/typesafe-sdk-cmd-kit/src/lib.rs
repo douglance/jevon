@@ -8,10 +8,12 @@
 
 mod input;
 mod mcp;
+mod source;
 mod usage;
 
 pub use input::{STDIN, items, lines, questions, read_file, text};
 pub use mcp::{read_only, read_only_remote};
+pub use source::{Items, read, resolve};
 pub use usage::Usage;
 
 use std::sync::Arc;

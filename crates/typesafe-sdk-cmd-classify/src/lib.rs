@@ -35,9 +35,15 @@ pub struct Options {
     /// The question to ask about every item.
     #[incurs(alias = "n")]
     pub noul: Option<String>,
-    /// Read items from this JSON array file instead of stdin lines, or `-`
-    /// for that array on stdin. Use it when an item contains newlines.
+    /// The items to classify, passed directly. The only source available over
+    /// MCP, where standard input carries the protocol rather than data.
+    #[incurs(alias = "i")]
+    pub items: Vec<String>,
+    /// Read items from this JSON array file, or `-` for that array on stdin.
+    /// Use it when an item contains newlines.
     pub items_file: Option<String>,
+    /// Read items from standard input, one per line.
+    pub stdin: bool,
     /// How many items to have in flight at once.
     #[incurs(alias = "j", default = 8)]
     pub concurrency: u32,
@@ -59,15 +65,16 @@ pub fn command() -> CommandDef {
         "classify",
         |ctx: TypedContext<(), Options, ()>| async move { run(&ctx.options).await },
     )
-    .description(
-        "Apply one question set to many items read from stdin, one per line, and report \
-         which answers were not confident",
-    )
+    .description("Apply one question set to many items and report which answers were not confident")
     .examples(examples())
     .mcp(read_only_remote("Classify a list of items"))
     .hint(
-        "Send the list in on stdin rather than looping in a shell: one client, one \
-         connection, several items in flight at once. Every item is answered independently, \
+        "Say where the items come from: --items for a list, --items-file for a JSON \
+         array, or --stdin for one per line. Standard input is never read unless \
+         --stdin is passed, because over MCP that stream carries the protocol and \
+         reading it hangs the call. Send the whole list in one invocation rather \
+         than looping in a shell: one client, one connection, several items in \
+         flight at once. Every item is answered independently, \
          so nothing an item says can influence another. `uncertain` counts answers below \
          --min-confidence, which defaults to 0.5; those are the rows worth reading rather \
          than acting on, and usually mean the item carried too little context to judge, not \
@@ -93,14 +100,16 @@ async fn run(options: &Options) -> TypedResult<Classified> {
 fn examples() -> Vec<Example> {
     vec![
         Example {
-            command: "--choice bug --choice feature --choice question \
+            command: "--stdin --choice bug --choice feature --choice question \
                       --noul \"What kind of issue is this?\" < titles.txt"
                 .to_owned(),
             description: Some("Label every line of a file".to_owned()),
         },
         Example {
-            command: "--questions-file questions.json --concurrency 16 < items.txt".to_owned(),
-            description: Some("Ask a larger question set, sixteen at a time".to_owned()),
+            command: "--items \"first ticket\" --items \"second ticket\" \
+                      --noul \"Is this urgent?\""
+                .to_owned(),
+            description: Some("Pass items directly — the only way in over MCP".to_owned()),
         },
     ]
 }

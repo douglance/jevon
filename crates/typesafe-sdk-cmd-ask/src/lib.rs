@@ -16,7 +16,9 @@ use typesafe_sdk_cmd_kit::{Usage, client, code_for, read_only_remote};
 /// What to ask about.
 #[derive(Deserialize, incurs::Args)]
 pub struct Args {
-    /// The text to ask about, or `-` to read it from standard input.
+    /// The text to ask about. `-` reads it from standard input, which only
+    /// works from a terminal — over MCP that stream carries the protocol, so
+    /// pass the text itself or use `--state-file`.
     pub state: String,
 }
 
@@ -46,6 +48,10 @@ pub struct Options {
     /// alone, with no separate confidence.
     #[incurs(alias = "n")]
     pub noul: Option<String>,
+    /// Read the text from this file instead of the argument. Use it when the
+    /// text is long enough to hit an argument-length limit, or contains
+    /// quoting a shell would mangle.
+    pub state_file: Option<String>,
     /// The model to use; defaults to the configured one.
     #[incurs(alias = "m")]
     pub model: Option<String>,
@@ -160,9 +166,21 @@ fn combined() -> Example {
     )
 }
 
+/// The text to ask about: the file when one was named, otherwise the argument.
+///
+/// `-` still reads standard input, because from a terminal that is the natural
+/// way to pipe something in. It is a terminal affordance only — over MCP that
+/// stream carries the protocol.
+fn state_of(args: &Args, options: &Options) -> Result<String, typesafe_sdk_error::Error> {
+    match options.state_file.as_deref() {
+        Some(path) => typesafe_sdk_cmd_kit::read_file(path),
+        None => typesafe_sdk_cmd_kit::text(&args.state),
+    }
+}
+
 async fn run(args: &Args, options: &Options) -> Result<Answered, typesafe_sdk_error::Error> {
     let questions = parse::questions_from(options)?;
-    let state = typesafe_sdk_cmd_kit::text(&args.state)?;
+    let state = state_of(args, options)?;
     let mut request = SystemOneRequest::new(state.as_str(), questions);
     if let Some(model) = options.model.clone() {
         request = request.model(model);
