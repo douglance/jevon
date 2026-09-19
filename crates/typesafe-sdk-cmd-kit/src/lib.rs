@@ -1,15 +1,18 @@
 //! Shared plumbing for the command crates.
 //!
-//! Two things every command needs and none should repeat: building a client
-//! from the environment, and turning an SDK error into the structured failure
-//! the CLI reports. Error codes are stable strings because agents branch on
-//! them, so they are derived from the error's kind rather than its message.
+//! What every command needs and none should repeat: building a client from the
+//! environment, turning an SDK error into the structured failure the CLI
+//! reports, and the shape token usage is reported in. Error codes are stable
+//! strings because agents branch on them, so they are derived from the error's
+//! kind rather than its message.
 
 mod input;
 mod mcp;
+mod usage;
 
 pub use input::{STDIN, items, lines, questions, text};
 pub use mcp::{read_only, read_only_remote};
+pub use usage::Usage;
 
 use std::sync::Arc;
 

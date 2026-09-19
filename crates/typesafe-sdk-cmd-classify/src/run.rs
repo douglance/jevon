@@ -2,16 +2,15 @@
 
 use futures::StreamExt as _;
 use typesafe_sdk_answers::Answer;
+use typesafe_sdk_answers::SystemOneResponse;
 use typesafe_sdk_client::{Client, SystemOneRequest};
-use typesafe_sdk_cmd_kit::{client, items as read_items, lines, questions as parse_questions};
-use typesafe_sdk_error::{Error, Result};
-use typesafe_sdk_questions::{Questions, choice_of, noul, questions, score};
+use typesafe_sdk_cmd_kit::{Usage, client, items as read_items, lines};
+use typesafe_sdk_error::Result;
+use typesafe_sdk_questions::Questions;
 
 use crate::Options;
+use crate::asking::question_set;
 use crate::report::{Classified, Item};
-
-/// The name a shorthand question is answered under.
-const SHORTHAND: &str = "answer";
 
 /// Classifies every line of standard input.
 ///
@@ -27,7 +26,7 @@ pub(crate) async fn classify(options: &Options) -> Result<Classified> {
     let client = client()?;
     let threshold = options.min_confidence;
 
-    let answered: Vec<Item> = futures::stream::iter(items.into_iter().map(|item| {
+    let answered: Vec<(Item, Usage)> = futures::stream::iter(items.into_iter().map(|item| {
         let client = &client;
         let job = Job {
             asked: asked.clone(),
@@ -40,17 +39,10 @@ pub(crate) async fn classify(options: &Options) -> Result<Classified> {
     .collect()
     .await;
 
-    Ok(summarise(&client, answered))
-}
-
-/// Folds the per-item results into the reported shape.
-fn summarise(client: &Client, items: Vec<Item>) -> Classified {
-    Classified {
-        model: client.config().default_model.clone(),
-        uncertain: items.iter().filter(|i| i.uncertain).count(),
-        failed: items.iter().filter(|i| i.error.is_some()).count(),
-        items,
-    }
+    Ok(Classified::of(
+        client.config().default_model.clone(),
+        answered,
+    ))
 }
 
 /// What every item in a run is judged against.
@@ -62,7 +54,10 @@ struct Job {
 }
 
 /// Classifies one item, reporting a failure rather than abandoning the run.
-async fn one(client: &Client, item: String, job: Job) -> Item {
+///
+/// A failed item spent nothing we can account for, so it contributes no tokens
+/// to the run's total.
+async fn one(client: &Client, item: String, job: Job) -> (Item, Usage) {
     let Job {
         asked,
         model,
@@ -73,18 +68,31 @@ async fn one(client: &Client, item: String, job: Job) -> Item {
         request = request.model(model);
     }
     match client.system_one(request).await {
-        Ok(response) => Item {
+        Ok(response) => answered(item, &response, threshold),
+        Err(error) => (failed(item, &error.to_string()), Usage::default()),
+    }
+}
+
+/// One item the model answered, and what answering it cost.
+fn answered(item: String, response: &SystemOneResponse, threshold: f64) -> (Item, Usage) {
+    (
+        Item {
             item,
             uncertain: response.answers.values().any(|a| below(a, threshold)),
             answers: serde_json::to_value(&response.answers).unwrap_or(serde_json::Value::Null),
             error: None,
         },
-        Err(error) => Item {
-            item,
-            answers: serde_json::Value::Null,
-            uncertain: true,
-            error: Some(error.to_string()),
-        },
+        Usage::from(&response.usage),
+    )
+}
+
+/// One item the run could not answer, reported as a row rather than an abort.
+fn failed(item: String, error: &str) -> Item {
+    Item {
+        item,
+        answers: serde_json::Value::Null,
+        uncertain: true,
+        error: Some(error.to_owned()),
     }
 }
 
@@ -100,43 +108,6 @@ fn below(answer: &Answer, threshold: f64) -> bool {
         Answer::Score(a) => a.confidence < threshold,
         Answer::Noul(a) => (a.noul - 0.5).abs() < threshold / 2.0,
     }
-}
-
-/// The questions to ask, from a file, inline JSON, or the shorthands.
-fn question_set(options: &Options) -> Result<Questions> {
-    if let Some(set) = parse_questions(
-        options.questions.as_deref(),
-        options.questions_file.as_deref(),
-    )? {
-        return Ok(set);
-    }
-    shorthand(options).ok_or_else(|| {
-        Error::Invalid(
-            "No questions were given. Pass --questions, --questions-file, or one of \
-             --choice, --score or --noul."
-                .to_owned(),
-        )
-    })
-}
-
-fn shorthand(options: &Options) -> Option<Questions> {
-    let instructions = options.noul.as_deref().unwrap_or("");
-    if !options.choice.is_empty() {
-        return Some(questions([(
-            SHORTHAND,
-            choice_of(instructions, options.choice.clone()),
-        )]));
-    }
-    if !options.score.is_empty() {
-        return Some(questions([(
-            SHORTHAND,
-            score(instructions, options.score.clone()),
-        )]));
-    }
-    options
-        .noul
-        .as_deref()
-        .map(|text| questions([(SHORTHAND, noul(text))]))
 }
 
 #[cfg(test)]

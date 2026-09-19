@@ -13,7 +13,10 @@ description = "Shared plumbing for the command crates."
 
 [dependencies]
 incurs.workspace = true
+schemars.workspace = true
+serde.workspace = true
 serde_json.workspace = true
+typesafe-sdk-answers.workspace = true
 typesafe-sdk-questions.workspace = true
 typesafe-sdk-client.workspace = true
 typesafe-sdk-config.workspace = true

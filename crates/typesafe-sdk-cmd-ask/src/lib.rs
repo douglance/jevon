@@ -11,7 +11,7 @@ use incurs::command::{CommandDef, Example, TypedContext, TypedResult};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use typesafe_sdk_client::SystemOneRequest;
-use typesafe_sdk_cmd_kit::{client, code_for, read_only_remote};
+use typesafe_sdk_cmd_kit::{Usage, client, code_for, read_only_remote};
 
 /// What to ask about.
 #[derive(Deserialize, incurs::Args)]
@@ -60,15 +60,6 @@ pub struct Answered {
     pub answers: serde_json::Value,
     /// Tokens consumed.
     pub usage: Usage,
-}
-
-/// Tokens consumed by the request.
-#[derive(Serialize, JsonSchema)]
-pub struct Usage {
-    /// Input tokens used.
-    pub input_tokens: u64,
-    /// Output tokens used.
-    pub output_tokens: u64,
 }
 
 /// Builds the `ask` command.
@@ -177,9 +168,6 @@ async fn run(args: &Args, options: &Options) -> Result<Answered, typesafe_sdk_er
     Ok(Answered {
         model: response.model,
         answers: serde_json::to_value(&response.answers).unwrap_or(serde_json::Value::Null),
-        usage: Usage {
-            input_tokens: response.usage.input_tokens,
-            output_tokens: response.usage.output_tokens,
-        },
+        usage: Usage::from(&response.usage),
     })
 }

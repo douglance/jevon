@@ -6,6 +6,7 @@
 //! like. This applies one question set to many items over a single client,
 //! several at a time, and reports which answers were not confident.
 
+mod asking;
 mod report;
 mod run;
 
