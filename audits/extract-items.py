@@ -71,9 +71,19 @@ def items_in(path, root):
 
 
 def as_text(item):
-    """What the model sees. The file path is omitted on purpose: it names the
-    crate, and a crate called `cmd-doctor` would nudge every answer about an
-    item inside it before the item itself was read."""
+    """What the model sees.
+
+    A documentation comment and a signature, and deliberately nothing else.
+    Adding the file's imports and the item's body was tried and measured: it
+    moved `signature_leaks_internals` not at all and dropped
+    `doc_restates_the_name` from 14/14 with +0.63 separation to 10/14 with
+    +0.20, because a doc that only restates a name stops looking like one when
+    a body sits under it. More evidence is not more signal.
+
+    The file path is omitted for the same kind of reason: it names the crate,
+    and a crate called `cmd-doctor` would nudge every answer about an item
+    inside it before the item itself was read.
+    """
     doc = item["doc"] or "(no documentation)"
     return f"/// {doc}\n{item['signature']}"
 

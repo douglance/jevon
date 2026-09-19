@@ -54,11 +54,11 @@ class TheExtractor(unittest.TestCase):
 
 class ResolvingAnEvaluationSet(unittest.TestCase):
     def setUp(self):
-        _, self.locations = audit.extract()
+        self.texts, self.locations = audit.extract()
         self.good = json.loads((EVAL / "stringly-typed.json").read_text())
 
     def test_resolves_a_shipped_set(self):
-        question, cases, texts = audit.resolve(EVAL / "stringly-typed.json", self.locations)
+        question, cases, texts = audit.resolve(EVAL / "stringly-typed.json", self.locations, self.texts)
         self.assertEqual(question, "stringly_typed")
         self.assertEqual(len(cases), len(texts))
 
@@ -66,7 +66,7 @@ class ResolvingAnEvaluationSet(unittest.TestCase):
         stale = copy.deepcopy(self.good)
         stale["items"][0]["name"] = "renamed_away_by_a_refactor"
         with self.assertRaises(SystemExit):
-            audit.resolve(spec_file(stale), self.locations)
+            audit.resolve(spec_file(stale), self.locations, self.texts)
 
     def test_refuses_a_set_with_only_one_label(self):
         # A prompt that always answers `no` scores 100% on an all-`no` set.
@@ -74,7 +74,7 @@ class ResolvingAnEvaluationSet(unittest.TestCase):
         for case in flat["items"]:
             case["expected"] = False
         with self.assertRaises(SystemExit):
-            audit.resolve(spec_file(flat), self.locations)
+            audit.resolve(spec_file(flat), self.locations, self.texts)
 
     def test_accepts_a_constructed_item(self):
         made = copy.deepcopy(self.good)
@@ -82,7 +82,7 @@ class ResolvingAnEvaluationSet(unittest.TestCase):
             {"as": "made", "expected": True, "text": "/// x\npub fn f(s: String) -> bool {"},
             made["items"][-1],
         ]
-        _, cases, texts = audit.resolve(spec_file(made), self.locations)
+        _, cases, texts = audit.resolve(spec_file(made), self.locations, self.texts)
         self.assertIn("pub fn f(s: String)", texts[0])
         self.assertEqual(len(cases), 2)
 
@@ -94,10 +94,10 @@ class EveryShippedSet(unittest.TestCase):
         self.assertEqual(asked - scored, set(), "a question with no baseline runs unmeasured")
 
     def test_every_set_resolves_and_has_both_labels(self):
-        _, locations = audit.extract()
+        texts, locations = audit.extract()
         for path in sorted(EVAL.glob("*.json")):
             with self.subTest(path.name):
-                _, cases, _ = audit.resolve(path, locations)
+                _, cases, _ = audit.resolve(path, locations, texts)
                 labels = {case["expected"] for case in cases}
                 self.assertEqual(labels, {True, False})
 
@@ -122,7 +122,8 @@ assert questions, "the questions file was empty when jev read it"
 name = next(iter(questions))
 print(json.dumps({
     "model": "stub",
-    "items": [{"item": i, "answers": {name: 1.0}, "uncertain": False} for i in items],
+    "items": [{"item": i, "answers": {name: {"type": "noul", "noul": 1.0}},
+               "uncertain": False} for i in items],
     "uncertain": 0,
     "failed": 0,
 }))
@@ -147,13 +148,13 @@ class TheWholeEvaluationPath(unittest.TestCase):
         launcher.write_text(f'#!/bin/sh\nexec {sys.executable} {stub} "$@"\n')
         launcher.chmod(0o755)
         self.original, audit.JEV = audit.JEV, str(launcher)
-        _, self.locations = audit.extract()
+        self.texts, self.locations = audit.extract()
 
     def tearDown(self):
         audit.JEV = self.original
 
     def test_the_questions_file_has_been_written_before_jev_reads_it(self):
-        question, cases, texts = audit.resolve(EVAL / "stringly-typed.json", self.locations)
+        question, cases, texts = audit.resolve(EVAL / "stringly-typed.json", self.locations, self.texts)
         # The stub raises if either file is empty, and `classify` turns a
         # non-zero exit into SystemExit. Reaching a verdict at all is the
         # regression check.
@@ -168,13 +169,21 @@ class TheWholeEvaluationPath(unittest.TestCase):
                         "a stub that answers yes to everything must not clear the bar")
 
     def test_a_question_that_always_answers_yes_is_rejected(self):
-        question, cases, texts = audit.resolve(EVAL / "stringly-typed.json", self.locations)
+        question, cases, texts = audit.resolve(EVAL / "stringly-typed.json", self.locations, self.texts)
         self.assertFalse(audit.run_eval(question, cases, texts),
                          "a constant answer must not pass the baseline")
 
 
 class ReadingAnAnswer(unittest.TestCase):
-    def test_reads_the_shapes_a_noul_can_come_back_as(self):
+    def test_reads_the_shape_the_api_actually_sends(self):
+        # Captured from a real response, not invented. The first version of
+        # this parser guessed at `probability` and `value` and silently
+        # returned None for every answer, which surfaced as "no answer came
+        # back" the first time a key was available.
+        live = {"doc_restates_the_name": {"type": "noul", "noul": 0.86}}
+        self.assertAlmostEqual(audit.probability(live, "doc_restates_the_name"), 0.86)
+
+    def test_tolerates_the_other_shapes_without_relying_on_them(self):
         for answers, expected in [
             ({"q": 0.8}, 0.8),
             ({"q": {"probability": 0.3}}, 0.3),

@@ -22,13 +22,5 @@
       "true": "Yes. It takes an owned value it never stores, consumes or mutates, or it clones and returns data the caller already holds, so the caller must allocate to call it.",
       "false": "No. It borrows what it only reads, and takes ownership only where it stores, consumes, mutates or must outlive the input."
     }
-  },
-  "signature_leaks_internals": {
-    "type": "noul",
-    "instructions": "This is one public Rust item with its signature. Imagine its implementation were rewritten to use a different internal data structure, while the behaviour a caller depends on stayed exactly the same. Would that rewrite force a breaking change to this signature?",
-    "criteria": {
-      "true": "Yes. The signature names a concrete container, a third-party type, or a field layout that belongs to how it is built rather than to what it promises, so callers are coupled to the implementation.",
-      "false": "No. The signature is stated in terms of what the item promises, through its own types, standard traits or generic bounds, so the implementation can change underneath it."
-    }
   }
 }

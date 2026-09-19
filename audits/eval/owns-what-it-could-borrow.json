@@ -1,29 +1,60 @@
 {
-  "question": "owns_what_it_could_borrow",
-  "why": "This repository has no positive example. Every function borrows what it only reads, and the two that take owned data store or consume it. That is a good result for the code and a useless one for measurement: a set drawn only from here would be all `no`, and a prompt that always answered `no` would score 100% on it. The four positives below are therefore written by hand, marked with `text`, and shown with a trailing asterisk in the report. They exist to prove the question can still say yes.",
-  "items": [
-    {"as": "made: owned String only read", "expected": true,
-     "text": "/// Reports whether the model name is an alias rather than a pinned version.\npub fn is_alias(model: String) -> bool {",
-     "why": "Takes String by value and only inspects it. &str would cost the caller nothing."},
-    {"as": "made: owned Vec only counted", "expected": true,
-     "text": "/// How many items came back uncertain.\npub fn uncertain_count(items: Vec<Item>) -> usize {",
-     "why": "Consumes the whole vector to produce a count. &[Item] would do."},
-    {"as": "made: clones what the caller holds", "expected": true,
-     "text": "/// The base URL this client will call.\npub fn base_url(&self) -> String {",
-     "why": "Returns an allocated copy of a field the caller could borrow as &str."},
-    {"as": "made: owned key only compared", "expected": true,
-     "text": "/// Whether this key is the one already configured.\npub fn matches_configured(key: String, other: String) -> bool {",
-     "why": "Two owned Strings, both only compared, forcing two allocations per call."},
-
-    {"file": "crates/typesafe-sdk-cmd-classify/src/report.rs", "name": "of", "expected": false,
-     "why": "Takes String and Vec by value and stores or consumes both. Ownership is what it needs."},
-    {"file": "crates/typesafe-sdk-cmd-kit/src/input.rs", "name": "text", "expected": false,
-     "why": "Borrows &str to read, returns an owned String it had to create. Nothing is taken that is only read."},
-    {"file": "crates/typesafe-sdk-cmd-kit/src/lib.rs", "name": "code_for", "expected": false,
-     "why": "Borrows &Error, returns &'static str. Allocates nothing."},
-    {"file": "crates/typesafe-sdk-cmd-kit/src/usage.rs", "name": "add", "expected": false,
-     "why": "Borrows &Usage to read and &mut self to write. Exactly the access it uses."},
-    {"file": "crates/typesafe-sdk-cmd-kit/src/mcp.rs", "name": "read_only_remote", "expected": false,
-     "why": "Borrows the title it reads."}
-  ]
+ "question": "owns_what_it_could_borrow",
+ "why": "This repository has no positive example. Every function borrows what it only reads, and the two that take owned data store or consume it. That is a good result for the code and a useless one for measurement: a set drawn only from here would be all `no`, and a prompt that always answered `no` would score 100% on it. The four positives below are therefore written by hand, marked with `text`, and shown with a trailing asterisk in the report. They exist to prove the question can still say yes.",
+ "items": [
+  {
+   "as": "made: owned String only read",
+   "expected": true,
+   "text": "/// Reports whether the model name is an alias rather than a pinned version.\npub fn is_alias(model: String) -> bool {",
+   "why": "Takes String by value and only inspects it. &str would cost the caller nothing."
+  },
+  {
+   "as": "made: owned Vec only counted",
+   "expected": true,
+   "text": "/// How many items came back uncertain.\npub fn uncertain_count(items: Vec<Item>) -> usize {",
+   "why": "Consumes the whole vector to produce a count. &[Item] would do."
+  },
+  {
+   "as": "made: owned struct only inspected",
+   "expected": true,
+   "text": "/// Whether this diagnosis reports any problem.\npub fn has_problems(diagnosis: Diagnosis) -> bool {",
+   "why": "Takes the whole struct by value and only reads one field. &Diagnosis costs the caller nothing."
+  },
+  {
+   "as": "made: owned key only compared",
+   "expected": true,
+   "text": "/// Whether this key is the one already configured.\npub fn matches_configured(key: String, other: String) -> bool {",
+   "why": "Two owned Strings, both only compared, forcing two allocations per call."
+  },
+  {
+   "file": "crates/typesafe-sdk-cmd-classify/src/report.rs",
+   "name": "of",
+   "expected": false,
+   "why": "Takes String and Vec by value and stores or consumes both. Ownership is what it needs."
+  },
+  {
+   "file": "crates/typesafe-sdk-cmd-kit/src/input.rs",
+   "name": "text",
+   "expected": false,
+   "why": "Borrows &str to read, returns an owned String it had to create. Nothing is taken that is only read."
+  },
+  {
+   "file": "crates/typesafe-sdk-cmd-kit/src/lib.rs",
+   "name": "code_for",
+   "expected": false,
+   "why": "Borrows &Error, returns &'static str. Allocates nothing."
+  },
+  {
+   "file": "crates/typesafe-sdk-cmd-kit/src/usage.rs",
+   "name": "add",
+   "expected": false,
+   "why": "Borrows &Usage to read and &mut self to write. Exactly the access it uses."
+  },
+  {
+   "file": "crates/typesafe-sdk-cmd-kit/src/mcp.rs",
+   "name": "read_only_remote",
+   "expected": false,
+   "why": "Borrows the title it reads."
+  }
+ ]
 }

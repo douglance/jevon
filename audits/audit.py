@@ -71,16 +71,22 @@ def classify(items, questions, concurrency=8):
 
 
 def probability(answers, question):
-    """A noul's probability of yes, however the answer happens to be shaped."""
+    """A noul's probability of yes.
+
+    The wire shape is `{"type": "noul", "noul": 0.86}` — the value sits under
+    the primitive's own name. The other keys are tolerated because they cost
+    nothing, but `noul` is the one the API actually sends, and it was found by
+    looking rather than by guessing.
+    """
     answer = (answers or {}).get(question)
     if isinstance(answer, dict):
-        for key in ("probability", "value", "answer", "score"):
+        for key in ("noul", "probability", "value", "score"):
             if isinstance(answer.get(key), (int, float)):
                 return float(answer[key])
     return float(answer) if isinstance(answer, (int, float)) else None
 
 
-def resolve(spec_path, locations):
+def resolve(spec_path, locations, texts=None):
     """Turn one evaluation set into (question, cases, texts), or fail loudly.
 
     Every set is resolved before any of them is classified, so a stale or
@@ -88,30 +94,35 @@ def resolve(spec_path, locations):
     rather than after an unrelated set has already been paid for.
     """
     spec = json.loads(spec_path.read_text())
+    # Index the rendered text, not the raw fields. Re-rendering here would let
+    # the evaluation and the audit drift apart, and a baseline scored against
+    # different evidence than the run it gates is worse than no baseline.
+    rendered = dict(zip(((i["file"], i["name"]) for i in locations), texts or []))
     index = {(item["file"], item["name"]): item for item in locations}
 
-    cases, texts = [], []
+    cases, out = [], []
     for case in spec["items"]:
         # A case is either an item in this repository, or one written by hand
         # because the repository has no example of that class. Both are needed:
         # a set with only one label scores a prompt that always answers that
         # label at 100%, which measures nothing.
         if "text" in case:
-            texts.append(case["text"])
+            out.append(case["text"])
         else:
-            found = index.get((case["file"], case["name"]))
-            if not found:
+            key = (case["file"], case["name"])
+            if key not in index:
                 die(f"evaluation item {case['file']}::{case['name']} no longer exists; "
                     "the set is stale and scoring it would be meaningless")
+            found = index[key]
             doc = found["doc"] or "(no documentation)"
-            texts.append(f"/// {doc}\n{found['signature']}")
+            out.append(rendered.get(key) or f"/// {doc}\n{found['signature']}")
         cases.append(case)
 
     if len({case["expected"] for case in cases}) < 2:
         die(f"{spec_path.name} labels only one class; such a set cannot "
             "distinguish a good prompt from a constant answer")
 
-    return spec["question"], cases, texts
+    return spec["question"], cases, out
 
 
 def run_eval(question, wanted, texts):
@@ -190,8 +201,8 @@ def main():
         if asked - scored:
             die(f"no evaluation set for {', '.join(sorted(asked - scored))}; "
                 "write one or pass --skip-eval and read the output as a guess")
-        _, locations = extract()
-        resolved = [resolve(spec, locations) for spec in specs]
+        texts, locations = extract()
+        resolved = [resolve(spec, locations, texts) for spec in specs]
         if not all([run_eval(*one) for one in resolved]):
             sys.exit(2)
     if not args.eval_only:

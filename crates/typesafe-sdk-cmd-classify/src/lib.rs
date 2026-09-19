@@ -48,7 +48,10 @@ pub struct Options {
     pub model: Option<String>,
 }
 
-/// Builds the `classify` command.
+/// The `classify` command, as a definition rather than an execution.
+///
+/// Shares `ask`'s question vocabulary on purpose: the same flags mean the
+/// same thing whether one item or ten thousand are being judged.
 #[must_use]
 pub fn command() -> CommandDef {
     CommandDef::typed::<(), Options, (), Classified, _, _>(

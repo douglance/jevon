@@ -62,7 +62,11 @@ pub struct Answered {
     pub usage: Usage,
 }
 
-/// Builds the `ask` command.
+/// The `ask` command, as a definition rather than an execution.
+///
+/// Returned rather than run so one graph can serve the terminal, MCP,
+/// `--schema`, `--llms-full` and the skill files from the same source. A
+/// command that printed here would reach exactly one of them.
 #[must_use]
 pub fn command() -> CommandDef {
     CommandDef::typed::<Args, Options, (), Answered, _, _>(

@@ -41,7 +41,10 @@ pub struct EnvVar {
     pub set: bool,
 }
 
-/// Builds the `doctor` command.
+/// The `doctor` command, as a definition rather than an execution.
+///
+/// The only command here that resolves configuration without sending a
+/// request, which is what makes it safe to run when nothing else works.
 #[must_use]
 pub fn command() -> CommandDef {
     CommandDef::typed::<(), (), (), Diagnosis, _, _>(

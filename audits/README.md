@@ -41,6 +41,44 @@ write-up records that adding a worked example to a criterion made results
 worse, because the model anchored on the example's surface form. There are no
 examples in the criteria here for that reason.
 
+## What was measured, including what failed
+
+These are results, not intentions. Each row is a scored run against answers
+settled by reading the items first.
+
+| Question | Correct | Separation | |
+|---|---|---|---|
+| `doc_restates_the_name` | 12/12 | +0.57 | kept |
+| `owns_what_it_could_borrow` | 8/9 | +0.63 | kept |
+| `stringly_typed` | 7/8 | +0.47 | kept |
+| `signature_leaks_internals` | 4/7 | **-0.02** | **dropped** |
+
+`signature_leaks_internals` asked whether a signature names a type belonging to
+how an item is built rather than to what it promises. It answered about 0.2 to
+every item in both classes, across three runs. It was not short of
+information — with the file's imports in view it still said no. Reading its
+answers back, it was right and the labels were wrong: for a CLI built on a
+framework, returning that framework's type *is* the promise. A question that
+cannot separate its classes produces numbers that look like findings, so it
+was removed rather than reworded.
+
+Two experiments that seemed obvious and made things worse:
+
+- **Giving items their imports and bodies.** The theory was that
+  `signature_leaks_internals` could not attribute `-> Cli` without the `use`
+  lines. It moved that question by 0.01 and dropped
+  `doc_restates_the_name` from 14/14 at +0.63 to 10/14 at +0.20, because a doc
+  that only restates a name stops looking like one when a body sits under it.
+  Reverted. More evidence is not more signal.
+- **Handing over more context generally.** The sibling audit in the SDK
+  repository found the same shape: an example added to a criterion made results
+  worse, because the model anchored on the example's surface form.
+
+The first run also found a defect in this tooling rather than in the code: the
+answer parser guessed at key names and never matched the real shape, which is
+`{"type": "noul", "noul": 0.86}`. Every answer came back as None. It was
+written from imagination and fixed by looking.
+
 ## The evaluation set
 
 `eval/doc-restates-the-name.json` holds fourteen items, six labelled yes and

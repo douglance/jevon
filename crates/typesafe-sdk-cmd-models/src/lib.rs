@@ -41,7 +41,10 @@ fn reported(cards: Vec<typesafe_sdk_models::ModelCard>) -> Models {
     }
 }
 
-/// Builds the `models list` command.
+/// The `models list` command, as a definition rather than an execution.
+///
+/// Lives under a group so later model commands have somewhere to go
+/// without `models` itself becoming a command that does something.
 #[must_use]
 pub fn list() -> CommandDef {
     CommandDef::typed::<(), (), (), Models, _, _>("list", |_ctx: TypedContext<(), (), ()>| async {
