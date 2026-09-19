@@ -67,6 +67,41 @@ jobs:
         env:
           RUSTDOCFLAGS: -D warnings
 
+  # Classifies this workspace with the CLI this commit builds. Skipped on
+  # forks, which have no secret, and skipped without complaint when no key is
+  # configured at all — an audit that cannot run is not a failure, but a red
+  # job that everyone learns to ignore would be.
+  audit:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: dtolnay/rust-toolchain@1.98.1
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo build --bin jev --locked
+      - name: Score the question sets, then audit
+        env:
+          TYPESAFE_API_KEY: ${{ secrets.TYPESAFE_API_KEY }}
+          # The binary from this commit, so the tool and the code it judges are
+          # always the same revision.
+          JEV: ./target/debug/jev
+        run: |
+          if [ -z "$TYPESAFE_API_KEY" ]; then
+            echo "::notice::No TYPESAFE_API_KEY configured, so nothing was audited."
+            exit 0
+          fi
+          # The baseline is a hard check. A reworded question that stops
+          # reproducing answers settled by reading is a regression, and the
+          # only part of this a machine can judge.
+          python3 audits/audit.py --eval-only
+          # The audit itself only reports. A probability above 0.5 is a
+          # ranking, not a verdict, and failing a build on one would teach
+          # everyone to route around it.
+          python3 audits/audit.py --skip-eval || true
+
   test:
     strategy:
       fail-fast: false

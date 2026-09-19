@@ -61,6 +61,19 @@ knowledge of the rest of the codebase, so it cannot tell a leaky signature from
 a deliberate one, and it will flag a type that is public precisely because
 callers are meant to depend on it.
 
+## In CI
+
+The `audit` job runs both phases on every push, using the `jev` built from
+that same commit, so the tool and the code it judges are never different
+revisions. The baseline is a hard check — a reworded question that stops
+reproducing answers settled by reading is a regression a machine can catch.
+The audit itself only reports, because failing a build on a probability would
+teach everyone to route around it.
+
+Without `TYPESAFE_API_KEY` in the repository secrets the job says so and
+passes. An audit that cannot run is not a failure; a permanently red job
+everyone learns to ignore would be.
+
 Every gate must be green before and after each change:
 
 ```sh
