@@ -68,7 +68,7 @@ version = "1.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "40c48f72fd53cd289104fc64099abca73db4166ad86ea0b4341abe65af83dadc"
 dependencies = [
- "windows-sys 0.61.2",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -79,7 +79,7 @@ checksum = "291e6a250ff86cd4a820112fb8898808a366d8f9f58ce16d1f538353ad55747d"
 dependencies = [
  "anstyle",
  "once_cell_polyfill",
- "windows-sys 0.61.2",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -543,7 +543,7 @@ dependencies = [
  "libc",
  "option-ext",
  "redox_users",
- "windows-sys 0.61.2",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -601,7 +601,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.61.2",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -1206,7 +1206,7 @@ checksum = "8f42a60cbdf9a97f5d2305f08a87dc4e09308d1276d28c869c684d7777685682"
 
 [[package]]
 name = "jevon"
-version = "0.7.1"
+version = "0.7.2"
 dependencies = [
  "incurs",
  "serde_json",
@@ -1662,7 +1662,7 @@ dependencies = [
  "once_cell",
  "socket2",
  "tracing",
- "windows-sys 0.61.2",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -1964,7 +1964,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.12.1",
- "windows-sys 0.61.2",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -2217,7 +2217,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c3d1e2c7f27f8d4cb10542a02c49005dbd6e93095799d6f3be745fae9f8fedd4"
 dependencies = [
  "libc",
- "windows-sys 0.61.2",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -2679,9 +2679,9 @@ checksum = "b6f5e870be6c3b371b77fe0ee0bafb859fa4964b4404c27de1d380043c4dda20"
 
 [[package]]
 name = "typesafe-sdk-answers"
-version = "0.6.0"
+version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e3daddfdc442fc42b130457e5881f877b3aa4330a39549d91445183634b6a511"
+checksum = "a8229b932e5ec86a514d291d8fc52e5529575565c6bafa5fc4198cbc26e95ef4"
 dependencies = [
  "indexmap",
  "serde",
@@ -2691,9 +2691,9 @@ dependencies = [
 
 [[package]]
 name = "typesafe-sdk-client"
-version = "0.6.0"
+version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e1577b9bb8d87f101cbe98cbc8b2a85ee705f50fb56e204817371c49aac873b9"
+checksum = "6d5571850dce321ebb51903aa65618f4e3e78691bc1a02dcd4e5d51b4fb385ee"
 dependencies = [
  "indexmap",
  "serde",
@@ -2713,7 +2713,7 @@ dependencies = [
 
 [[package]]
 name = "typesafe-sdk-cmd-ask"
-version = "0.7.1"
+version = "0.7.2"
 dependencies = [
  "incurs",
  "schemars",
@@ -2728,7 +2728,7 @@ dependencies = [
 
 [[package]]
 name = "typesafe-sdk-cmd-classify"
-version = "0.7.1"
+version = "0.7.2"
 dependencies = [
  "futures",
  "incurs",
@@ -2745,7 +2745,7 @@ dependencies = [
 
 [[package]]
 name = "typesafe-sdk-cmd-doctor"
-version = "0.7.1"
+version = "0.7.2"
 dependencies = [
  "incurs",
  "schemars",
@@ -2759,7 +2759,7 @@ dependencies = [
 
 [[package]]
 name = "typesafe-sdk-cmd-kit"
-version = "0.7.1"
+version = "0.7.2"
 dependencies = [
  "incurs",
  "schemars",
@@ -2777,7 +2777,7 @@ dependencies = [
 
 [[package]]
 name = "typesafe-sdk-cmd-models"
-version = "0.7.1"
+version = "0.7.2"
 dependencies = [
  "incurs",
  "schemars",
@@ -2791,9 +2791,9 @@ dependencies = [
 
 [[package]]
 name = "typesafe-sdk-config"
-version = "0.6.0"
+version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "22bc0f593dc8a0735dfc15d6f26e945397929b0964c544ec6d2c39a86e079425"
+checksum = "458209c83b1a1c0b50d96b0051ee67e004a74c999eea48456f53832be54a4df3"
 dependencies = [
  "typesafe-sdk-env",
  "typesafe-sdk-error",
@@ -2804,15 +2804,15 @@ dependencies = [
 
 [[package]]
 name = "typesafe-sdk-env"
-version = "0.6.0"
+version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f003f7d01c8f80859792052df57631eaf89ecb1a25fe91d98d919a8ae0c421f0"
+checksum = "044ca6bd88c8b617f8c8c04c4b2a1ae5ba7379054e344bde0688e963ffe7611e"
 
 [[package]]
 name = "typesafe-sdk-error"
-version = "0.6.0"
+version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b732da40f70300e33f73a45898407f4aa12007005b6457d146c4eee66a013b93"
+checksum = "a2ae7998e337287c4086cc94d0f09e19b7fca17e82b96af4a21d1f441d11c6a1"
 dependencies = [
  "serde_json",
  "thiserror",
@@ -2821,9 +2821,9 @@ dependencies = [
 
 [[package]]
 name = "typesafe-sdk-headers"
-version = "0.6.0"
+version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "230c0b57d0962cc7885d1a74b5fc7c346fbcf24bd18fe33de6c15671617158b2"
+checksum = "e4f48f0440b64b93cd7dbfc60ed06acedf18d17df6f4249f80280e4a102c37df"
 dependencies = [
  "httpdate",
  "indexmap",
@@ -2831,9 +2831,9 @@ dependencies = [
 
 [[package]]
 name = "typesafe-sdk-http"
-version = "0.6.0"
+version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7793e7d43592c76ec51950b6ee583b738e4897d403cd9e49954811ee39d053ed"
+checksum = "335e35aa310bee682126af3f99c9bf5f53ecfb93eaab60d247bd60e3d67efe50"
 dependencies = [
  "async-trait",
  "reqwest 0.12.28",
@@ -2844,9 +2844,9 @@ dependencies = [
 
 [[package]]
 name = "typesafe-sdk-log"
-version = "0.6.0"
+version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9e1def5175822e1ed5bc393bddc771e4b23940f4e160a334561acccf2b5521d8"
+checksum = "43b343b89535db28a80541e2f6b40b37c6dd86f46b23174bcd37ce50d36c5f80"
 dependencies = [
  "typesafe-sdk-error",
  "typesafe-sdk-headers",
@@ -2854,9 +2854,9 @@ dependencies = [
 
 [[package]]
 name = "typesafe-sdk-models"
-version = "0.6.0"
+version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "de78dc239809ab1f70969d9ba43fd38053de1625293cc59d0bb985343989412f"
+checksum = "374a9a44f4f92cfdbd9339c6005baea82dde07972b0c739bf8e3e4a8aea0d068"
 dependencies = [
  "serde",
  "serde_json",
@@ -2865,9 +2865,9 @@ dependencies = [
 
 [[package]]
 name = "typesafe-sdk-questions"
-version = "0.6.0"
+version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ec4c7574969c2cfab9528de2a5b87799a31d949af4ee5fede6fbb28b50f305db"
+checksum = "a472502b5ebea98adcd4766a7373b20b24d595f4c8ec158d0d16787de2b6de27"
 dependencies = [
  "indexmap",
  "serde",
@@ -2877,9 +2877,9 @@ dependencies = [
 
 [[package]]
 name = "typesafe-sdk-retry"
-version = "0.6.0"
+version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8fbd3d20cff001b74aafcf162c3dad61fb1c41a6593f02fb6b1c622cad6eabdb"
+checksum = "ad036359ea54c57b2b0c2f380b591f00858efb9efa56c8089fea0dec27b31571"
 dependencies = [
  "typesafe-sdk-error",
  "typesafe-sdk-headers",
@@ -2887,9 +2887,9 @@ dependencies = [
 
 [[package]]
 name = "typesafe-sdk-runtime"
-version = "0.6.0"
+version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6e6a37c337c4af438dd8a21dbd545ff9807508d6602e7ac1f60f0e7bee99e7d1"
+checksum = "5411391bf5310bfcd46b85730ff2ddbd4698a669287c24f5d78cf00ae7e70b57"
 
 [[package]]
 name = "unicode-ident"
@@ -3142,7 +3142,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.61.2",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -3412,7 +3412,7 @@ checksum = "ea6fc2961e4ef194dcbfe56bb845534d0dc8098940c7e5c012a258bfec6701bd"
 
 [[package]]
 name = "xtask"
-version = "0.7.1"
+version = "0.7.2"
 dependencies = [
  "anyhow",
  "proc-macro2",
