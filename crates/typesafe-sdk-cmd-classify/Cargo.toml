@@ -17,6 +17,7 @@ incurs.workspace = true
 schemars.workspace = true
 serde.workspace = true
 serde_json.workspace = true
+indexmap.workspace = true
 typesafe-sdk-answers.workspace = true
 typesafe-sdk-client.workspace = true
 typesafe-sdk-cmd-kit.workspace = true
@@ -24,6 +25,7 @@ typesafe-sdk-error.workspace = true
 typesafe-sdk-questions.workspace = true
 
 [dev-dependencies]
+typesafe-sdk-cmd-kit.workspace = true
 indexmap.workspace = true
 
 [lints]

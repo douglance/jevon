@@ -6,11 +6,13 @@
 //! strings because agents branch on them, so they are derived from the error's
 //! kind rather than its message.
 
+mod confidence;
 mod input;
 mod mcp;
 mod source;
 mod usage;
 
+pub use confidence::below;
 pub use input::{STDIN, items, lines, questions, read_file, text};
 pub use mcp::{read_only, read_only_remote};
 pub use source::{Items, read, resolve};

@@ -8,6 +8,7 @@
 //! A batch reports what it cost in total. Per-item tokens are the caller's to
 //! attribute; the number anyone actually quotes is the one for the whole run.
 
+use indexmap::IndexMap;
 use schemars::JsonSchema;
 use serde::Serialize;
 use typesafe_sdk_cmd_kit::Usage;
@@ -34,6 +35,8 @@ pub struct Answered {
     pub usage: Usage,
     /// The resolved model version that answered, if anything did.
     pub model: Option<String>,
+    /// The questions whose answers fell below the threshold, by name.
+    pub shaky: Vec<String>,
 }
 
 /// Every item, in the order they were read.
@@ -53,8 +56,18 @@ pub struct Classified {
     pub models: Option<Vec<String>>,
     /// One entry per input line.
     pub items: Vec<Item>,
-    /// How many answers fell below the confidence threshold.
+    /// How many rows had at least one answer below the threshold.
+    ///
+    /// Across several questions this is an OR, so it climbs quickly and says
+    /// nothing about which question was shaky. On a six-question run it reached
+    /// 86% and identified nothing. Read `uncertain_by_question` instead.
     pub uncertain: usize,
+    /// How many times each question came back below the threshold.
+    ///
+    /// This is the number worth acting on: it points at the question to reword
+    /// rather than at the rows to re-read.
+    #[serde(skip_serializing_if = "IndexMap::is_empty")]
+    pub uncertain_by_question: IndexMap<String, usize>,
     /// How many items could not be classified at all.
     pub failed: usize,
     /// Tokens consumed by every item that was answered.

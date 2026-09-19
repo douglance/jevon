@@ -15,7 +15,7 @@ use incurs::command::{CommandDef, Example, TypedContext, TypedResult};
 use serde::Deserialize;
 use typesafe_sdk_cmd_kit::{code_for, read_only_remote};
 
-pub use report::{Classified, Item};
+pub use report::{Answered, Classified, Item};
 
 /// How to classify.
 #[derive(Default, Deserialize, incurs::Options)]

@@ -25,6 +25,7 @@ typesafe-sdk-error.workspace = true
 typesafe-sdk-http.workspace = true
 
 [dev-dependencies]
+indexmap.workspace = true
 typesafe-sdk-headers.workspace = true
 
 [lints]
