@@ -7,6 +7,7 @@
 //! several at a time, and reports which answers were not confident.
 
 mod asking;
+mod fold;
 mod report;
 mod run;
 
@@ -56,12 +57,7 @@ pub struct Options {
 pub fn command() -> CommandDef {
     CommandDef::typed::<(), Options, (), Classified, _, _>(
         "classify",
-        |ctx: TypedContext<(), Options, ()>| async move {
-            match run::classify(&ctx.options).await {
-                Ok(result) => TypedResult::ok(result),
-                Err(error) => TypedResult::error(code_for(&error), error.to_string()),
-            }
-        },
+        |ctx: TypedContext<(), Options, ()>| async move { run(&ctx.options).await },
     )
     .description(
         "Apply one question set to many items read from stdin, one per line, and report \
@@ -76,9 +72,21 @@ pub fn command() -> CommandDef {
          --min-confidence, which defaults to 0.5; those are the rows worth reading rather \
          than acting on, and usually mean the item carried too little context to judge, not \
          that the model failed. Give each line enough to go on — a bare identifier cannot be \
-         classified, however good the question is.",
+         classified, however good the question is. The run exits 1 when nothing was \
+         answered and 2 when some items failed, so a broken key cannot pass for success.",
     )
     .done()
+}
+
+/// Runs the command and picks the exit code the result deserves.
+async fn run(options: &Options) -> TypedResult<Classified> {
+    match run::classify(options).await {
+        Ok(result) => match result.exit_code() {
+            Some(code) => TypedResult::ok_with_exit_code(result, code),
+            None => TypedResult::ok(result),
+        },
+        Err(error) => TypedResult::error(code_for(&error), error.to_string()),
+    }
 }
 
 /// Worked invocations, rendered into the skill file.

@@ -26,11 +26,31 @@ pub struct Item {
     pub error: Option<String>,
 }
 
+/// One item's result, and what answering it cost and involved.
+pub struct Answered {
+    /// The row to report.
+    pub item: Item,
+    /// Tokens spent on it.
+    pub usage: Usage,
+    /// The resolved model version that answered, if anything did.
+    pub model: Option<String>,
+}
+
 /// Every item, in the order they were read.
 #[derive(Serialize, JsonSchema)]
 pub struct Classified {
-    /// The model that answered.
+    /// The resolved model version that answered, such as `jev-1.13.0`.
+    ///
+    /// This is the model the service actually used, not the alias that was
+    /// asked for. It falls back to the configured default only when nothing
+    /// was answered, because then no response named one.
     pub model: String,
+    /// Every resolved version seen, when a run saw more than one.
+    ///
+    /// A long run can straddle a deployment. Reporting only the first would
+    /// quietly mislabel everything after the roll.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub models: Option<Vec<String>>,
     /// One entry per input line.
     pub items: Vec<Item>,
     /// How many answers fell below the confidence threshold.
@@ -39,81 +59,4 @@ pub struct Classified {
     pub failed: usize,
     /// Tokens consumed by every item that was answered.
     pub usage: Usage,
-}
-
-impl Classified {
-    /// Folds the per-item results, in order, into the reported shape.
-    #[must_use]
-    pub fn of(model: String, answered: Vec<(Item, Usage)>) -> Self {
-        let mut usage = Usage::default();
-        let items: Vec<Item> = answered
-            .into_iter()
-            .map(|(item, spent)| {
-                usage.input_tokens = usage.input_tokens.saturating_add(spent.input_tokens);
-                usage.output_tokens = usage.output_tokens.saturating_add(spent.output_tokens);
-                item
-            })
-            .collect();
-        Self {
-            model,
-            uncertain: items.iter().filter(|i| i.uncertain).count(),
-            failed: items.iter().filter(|i| i.error.is_some()).count(),
-            usage,
-            items,
-        }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{Classified, Item, Usage};
-
-    fn item(uncertain: bool, error: Option<&str>) -> Item {
-        Item {
-            item: "x".to_owned(),
-            answers: serde_json::Value::Null,
-            uncertain,
-            error: error.map(str::to_owned),
-        }
-    }
-
-    fn spent(input: u64, output: u64) -> Usage {
-        Usage {
-            input_tokens: input,
-            output_tokens: output,
-        }
-    }
-
-    /// The reported total is the sum over the batch, not one item's and not
-    /// the last one's — the distinction only shows up past two items.
-    #[test]
-    fn usage_totals_every_item() {
-        let report = Classified::of(
-            "jev-1".to_owned(),
-            vec![
-                (item(false, None), spent(10, 1)),
-                (item(false, None), spent(200, 20)),
-                (item(false, None), spent(3000, 300)),
-            ],
-        );
-        assert_eq!(report.usage.input_tokens, 3210);
-        assert_eq!(report.usage.output_tokens, 321);
-    }
-
-    /// An item that failed was never answered, so it adds nothing to the bill
-    /// while still being counted as a row.
-    #[test]
-    fn a_failed_item_costs_nothing_and_still_counts() {
-        let report = Classified::of(
-            "jev-1".to_owned(),
-            vec![
-                (item(false, None), spent(7, 2)),
-                (item(true, Some("boom")), Usage::default()),
-            ],
-        );
-        assert_eq!(report.usage.input_tokens, 7);
-        assert_eq!(report.failed, 1);
-        assert_eq!(report.uncertain, 1);
-        assert_eq!(report.items.len(), 2);
-    }
 }

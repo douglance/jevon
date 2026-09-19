@@ -5,6 +5,8 @@ use typesafe_sdk_answers::Answer;
 use typesafe_sdk_answers::SystemOneResponse;
 use typesafe_sdk_client::{Client, SystemOneRequest};
 use typesafe_sdk_cmd_kit::{Usage, client, items as read_items, lines};
+
+use crate::report::Answered;
 use typesafe_sdk_error::Result;
 use typesafe_sdk_questions::Questions;
 
@@ -26,7 +28,7 @@ pub(crate) async fn classify(options: &Options) -> Result<Classified> {
     let client = client()?;
     let threshold = options.min_confidence;
 
-    let answered: Vec<(Item, Usage)> = futures::stream::iter(items.into_iter().map(|item| {
+    let answered: Vec<Answered> = futures::stream::iter(items.into_iter().map(|item| {
         let client = &client;
         let job = Job {
             asked: asked.clone(),
@@ -39,10 +41,7 @@ pub(crate) async fn classify(options: &Options) -> Result<Classified> {
     .collect()
     .await;
 
-    Ok(Classified::of(
-        client.config().default_model.clone(),
-        answered,
-    ))
+    Ok(Classified::of(&client.config().default_model, answered))
 }
 
 /// What every item in a run is judged against.
@@ -57,7 +56,7 @@ struct Job {
 ///
 /// A failed item spent nothing we can account for, so it contributes no tokens
 /// to the run's total.
-async fn one(client: &Client, item: String, job: Job) -> (Item, Usage) {
+async fn one(client: &Client, item: String, job: Job) -> Answered {
     let Job {
         asked,
         model,
@@ -69,30 +68,38 @@ async fn one(client: &Client, item: String, job: Job) -> (Item, Usage) {
     }
     match client.system_one(request).await {
         Ok(response) => answered(item, &response, threshold),
-        Err(error) => (failed(item, &error.to_string()), Usage::default()),
+        Err(error) => failed(item, &error.to_string()),
     }
 }
 
-/// One item the model answered, and what answering it cost.
-fn answered(item: String, response: &SystemOneResponse, threshold: f64) -> (Item, Usage) {
-    (
-        Item {
+/// One item the model answered, what it cost, and which model version answered.
+fn answered(item: String, response: &SystemOneResponse, threshold: f64) -> Answered {
+    Answered {
+        item: Item {
             item,
             uncertain: response.answers.values().any(|a| below(a, threshold)),
             answers: serde_json::to_value(&response.answers).unwrap_or(serde_json::Value::Null),
             error: None,
         },
-        Usage::from(&response.usage),
-    )
+        usage: Usage::from(&response.usage),
+        model: Some(response.model.clone()),
+    }
 }
 
 /// One item the run could not answer, reported as a row rather than an abort.
-fn failed(item: String, error: &str) -> Item {
-    Item {
-        item,
-        answers: serde_json::Value::Null,
-        uncertain: true,
-        error: Some(error.to_owned()),
+///
+/// Nothing answered it, so it names no model and spent nothing we can account
+/// for.
+fn failed(item: String, error: &str) -> Answered {
+    Answered {
+        item: Item {
+            item,
+            answers: serde_json::Value::Null,
+            uncertain: true,
+            error: Some(error.to_owned()),
+        },
+        usage: Usage::default(),
+        model: None,
     }
 }
 
