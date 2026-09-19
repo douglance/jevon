@@ -8,6 +8,13 @@ use typesafe_sdk_cmd_kit::Usage;
 
 use crate::report::{Answered, Classified, Item};
 
+/// Adds one row's shaky questions to the running counts.
+fn tally(counts: &mut IndexMap<String, usize>, shaky: Vec<String>) {
+    for name in shaky {
+        *counts.entry(name).or_default() += 1;
+    }
+}
+
 /// Records a model version the first time it is seen, keeping the order they
 /// appeared in so the first is the one a single-version run reports.
 fn note(seen: &mut Vec<String>, model: Option<String>) {
@@ -28,9 +35,7 @@ impl Classified {
             usage.input_tokens = usage.input_tokens.saturating_add(row.usage.input_tokens);
             usage.output_tokens = usage.output_tokens.saturating_add(row.usage.output_tokens);
             note(&mut seen, row.model);
-            for name in row.shaky {
-                *shaky.entry(name).or_default() += 1;
-            }
+            tally(&mut shaky, row.shaky);
             items.push(row.item);
         }
         Self {

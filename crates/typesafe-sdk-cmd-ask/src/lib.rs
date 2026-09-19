@@ -172,10 +172,10 @@ fn combined() -> Example {
 /// way to pipe something in. It is a terminal affordance only — over MCP that
 /// stream carries the protocol.
 fn state_of(args: &Args, options: &Options) -> Result<String, typesafe_sdk_error::Error> {
-    match options.state_file.as_deref() {
-        Some(path) => typesafe_sdk_cmd_kit::read_file(path),
-        None => typesafe_sdk_cmd_kit::text(&args.state),
-    }
+    options.state_file.as_deref().map_or_else(
+        || typesafe_sdk_cmd_kit::text(&args.state),
+        typesafe_sdk_cmd_kit::read_file,
+    )
 }
 
 async fn run(args: &Args, options: &Options) -> Result<Answered, typesafe_sdk_error::Error> {

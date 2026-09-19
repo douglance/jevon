@@ -126,7 +126,7 @@ fn paid(item: Item, usage: Usage) -> Answered {
     }
 }
 
-fn spent(input: u64, output: u64) -> Usage {
+const fn spent(input: u64, output: u64) -> Usage {
     Usage {
         input_tokens: input,
         output_tokens: output,

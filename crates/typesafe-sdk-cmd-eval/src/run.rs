@@ -1,4 +1,4 @@
-//! Asking one question of every labelled item.
+//! Asking each question of every labelled item.
 
 use futures::StreamExt as _;
 use typesafe_sdk_answers::Answer;
@@ -9,36 +9,91 @@ use typesafe_sdk_questions::{Questions, choice_of, noul, questions};
 
 use crate::Options;
 use crate::labels::{Labelled, read};
-use crate::measure::{Judged, choice, judge, noul as measure_noul};
-use crate::report::Evaluated;
+use crate::measure::{Graded, as_choice, as_noul, choice, noul as measure_noul};
+use crate::report::{Evaluated, Measured};
 
-/// The name the single question is answered under.
+/// The name the question is answered under.
 const ASKED: &str = "answer";
 
 /// One item's answer, what it cost, and which model version answered.
 type Reply = (Option<Answer>, Usage, Option<String>);
 
-/// Runs the eval and reports what it measured.
+/// Runs the eval and reports what it measured, best question first.
 ///
 /// # Errors
 /// Returns [`Error::Invalid`] when no question was given or the labels cannot
 /// be read, and a client error when one cannot be built.
 pub(crate) async fn evaluate(options: &Options) -> Result<Evaluated> {
-    let asked = question(options)?;
+    if options.noul.is_empty() {
+        return Err(Error::Invalid(
+            "No question was given. Pass --noul, and repeat it to compare wordings.".to_owned(),
+        ));
+    }
     let rows = read(&options.labels_file)?;
     let client = client()?;
-    let (answers, usage, model) = ask_all(&client, &rows, &asked, options).await;
-    let judged = judge(rows, answers);
-    let model = model.unwrap_or_else(|| client.config().default_model.clone());
-    Ok(report(&judged, options, model, usage))
+    let Run {
+        mut measured,
+        usage,
+        model,
+        failed,
+    } = each(&client, &rows, options).await;
+    measured.sort_by(|a, b| rank(b).total_cmp(&rank(a)));
+    Ok(Evaluated {
+        model: model.unwrap_or_else(|| client.config().default_model.clone()),
+        items: rows.len(),
+        failed,
+        positives: sided(&rows, true),
+        negatives: sided(&rows, false),
+        questions: measured,
+        usage,
+    })
+}
+
+/// What asking every question of every item produced.
+struct Run {
+    measured: Vec<Measured>,
+    usage: Usage,
+    model: Option<String>,
+    failed: usize,
+}
+
+/// Measures each question in turn, over the same items.
+async fn each(client: &Client, rows: &[Labelled], options: &Options) -> Run {
+    let mut run = Run {
+        measured: Vec::with_capacity(options.noul.len()),
+        usage: Usage::default(),
+        model: None,
+        failed: 0,
+    };
+    for question in &options.noul {
+        let (answers, spent, seen) = ask_all(client, rows, question, options).await;
+        run.usage.input_tokens = run.usage.input_tokens.saturating_add(spent.input_tokens);
+        run.usage.output_tokens = run.usage.output_tokens.saturating_add(spent.output_tokens);
+        run.model = run.model.or(seen);
+        run.failed += answers.iter().filter(|(a, _)| a.is_none()).count();
+        run.measured.push(measure(question, &answers, options));
+    }
+    run
+}
+
+/// How many rows carry one side of a yes/no label.
+fn sided(rows: &[Labelled], want: bool) -> usize {
+    rows.iter()
+        .filter(|r| r.label.as_bool() == Some(want))
+        .count()
+}
+
+/// What a question is ranked by. A choice has no AUC, so accuracy stands in.
+fn rank(measured: &Measured) -> f64 {
+    measured.auc.or(measured.accuracy).unwrap_or(0.0)
 }
 
 /// Which measurement the question kind calls for.
-fn report(judged: &[Judged], options: &Options, model: String, usage: Usage) -> Evaluated {
+fn measure(question: &str, answers: &[Graded], options: &Options) -> Measured {
     if options.choice.is_empty() {
-        measure_noul(judged, model, usage)
+        measure_noul(question, &as_noul(answers))
     } else {
-        choice(judged, options.min_confidence, model, usage)
+        choice(question, &as_choice(answers, options.min_confidence))
     }
 }
 
@@ -47,9 +102,14 @@ fn report(judged: &[Judged], options: &Options, model: String, usage: Usage) -> 
 async fn ask_all(
     client: &Client,
     rows: &[Labelled],
-    asked: &Questions,
+    question: &str,
     options: &Options,
-) -> (Vec<Option<Answer>>, Usage, Option<String>) {
+) -> (
+    Vec<(Option<Answer>, serde_json::Value)>,
+    Usage,
+    Option<String>,
+) {
+    let asked = question_set(question, options);
     // Collecting first is load-bearing: a stream built straight off `rows.iter()`
     // borrows for a lifetime the async boundary cannot name, and the closure
     // stops satisfying the higher-ranked bound `CommandDef::typed` requires.
@@ -58,7 +118,7 @@ async fn ask_all(
         reason = "the borrow, not the allocation, is what this removes"
     )]
     let texts: Vec<String> = rows.iter().map(|row| row.item.clone()).collect();
-    let answered: Vec<Reply> = futures::stream::iter(texts.into_iter().map(|item| {
+    let replies: Vec<Reply> = futures::stream::iter(texts.into_iter().map(|item| {
         let asked = asked.clone();
         let model = options.model.clone();
         async move { one(client, item, asked, model).await }
@@ -66,14 +126,15 @@ async fn ask_all(
     .buffered(options.concurrency.max(1) as usize)
     .collect()
     .await;
+
     let mut usage = Usage::default();
     let mut model = None;
-    let mut answers = Vec::with_capacity(answered.len());
-    for (answer, spent, seen) in answered {
+    let mut answers = Vec::with_capacity(replies.len());
+    for ((answer, spent, seen), row) in replies.into_iter().zip(rows) {
         usage.input_tokens = usage.input_tokens.saturating_add(spent.input_tokens);
         usage.output_tokens = usage.output_tokens.saturating_add(spent.output_tokens);
         model = model.or(seen);
-        answers.push(answer);
+        answers.push((answer, row.label.clone()));
     }
     (answers, usage, model)
 }
@@ -93,21 +154,11 @@ async fn one(client: &Client, item: String, asked: Questions, model: Option<Stri
     })
 }
 
-/// The one question being measured.
-fn question(options: &Options) -> Result<Questions> {
-    let instructions = options.noul.as_deref().unwrap_or_default();
-    if !options.choice.is_empty() {
-        return Ok(questions([(
-            ASKED,
-            choice_of(instructions, options.choice.clone()),
-        )]));
+/// The one question being measured, in the kind the labels call for.
+fn question_set(question: &str, options: &Options) -> Questions {
+    if options.choice.is_empty() {
+        questions([(ASKED, noul(question))])
+    } else {
+        questions([(ASKED, choice_of(question, options.choice.clone()))])
     }
-    options.noul.as_deref().map_or_else(
-        || {
-            Err(Error::Invalid(
-                "No question was given. Pass --noul, or --noul with --choice.".to_owned(),
-            ))
-        },
-        |text| Ok(questions([(ASKED, noul(text))])),
-    )
 }

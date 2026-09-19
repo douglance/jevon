@@ -106,6 +106,10 @@ pub(crate) fn share(hits: &[bool]) -> Option<f64> {
 }
 
 #[cfg(test)]
+#[expect(
+    clippy::expect_used,
+    reason = "a test that cannot fail loudly is not a test"
+)]
 mod tests {
     use super::{auc, cuts, share};
 
