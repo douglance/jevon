@@ -33,6 +33,20 @@ jobs:
       # seconds rather than after a full lint pass.
       - run: cargo xtask check
 
+  # The audit tooling is Python in a Rust workspace, so no cargo gate covers
+  # it. Without this job a change there breaks nothing visible until someone
+  # has an API key, and the failure looks like a configuration problem.
+  audit-tooling:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # No API key: every guard these cover sits before the first request, and
+      # the one test that needs an answer supplies its own stub.
+      - run: python3 -m unittest discover -s audits -v
+
   lint:
     runs-on: ubuntu-latest
     steps:
